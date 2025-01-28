@@ -2,16 +2,17 @@ const Course = require('../models/courseModel');
 // Create a course
 const createCourse = async (req, res) => {
     try {
-        const { title, description } = req.body;
-        const instructor = req.user.id; // From authMiddleware
-        const course = await Course.create({ title, description, instructor });
-        res.status(201).json(course);
+      const { title, description } = req.body;
+  
+      // Use the instructor's ID from the authenticated request
+      const instructor = req.user.id;
+  
+      const course = await Course.create({ title, description, instructor });
+      res.status(201).json(course);
     } catch (err) {
-        res.status(400).json({
-            message: 'Error creating course', error: err.message
-        });
+      res.status(400).json({ message: 'Error creating course', error: err.message });
     }
-};
+  };
 // Enroll in a course
 const enrollInCourse = async (req, res) => {
     try {

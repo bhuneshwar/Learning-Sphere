@@ -12,19 +12,15 @@ const LoginPage = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(''); // Reset error
-        if (!username || password.length < 6) {
-            setError('Invalid username or password');
-            return;
-        }
         try {
-            const { data } = await loginUser({ username, password });
-            dispatch(loginSuccess(data));
-            window.location.href = '/dashboard';
+          const data = await loginUser({ username, password });
+          dispatch(loginSuccess(data)); // Dispatch user data to Redux
+          window.location.href = '/dashboard'; // Navigate to dashboard
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+          setError(err.response?.data?.message || 'Login failed');
         }
-    };
+      };
+    
 
     return (
         <div className="login-container">
