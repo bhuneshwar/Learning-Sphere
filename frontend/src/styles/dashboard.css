@@ -43,4 +43,39 @@
   .create-course-btn:hover {
     background-color: #0056b3;
   }
+
+  .logout-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .logout-button:hover {
+    background-color: #c82333;
+  }
+
+  .create-course-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745; /* Green for positive action */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  /* Hover Effect */
+  .create-course-btn:hover {
+    background-color: #218838;
+    transform: scale(1.05); /* Slight zoom effect */
+  }
+  
   

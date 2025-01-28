@@ -32,46 +32,46 @@ const register = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    const user = new User({ email, password, role });
+    const user = new User({ email: email.toLowerCase(), password, role });
     await user.save();
 
-    // Generate mock verification token
-    const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
-    console.log(`Mock Email Verification Token for ${email}: ${verificationToken}`);
-
-    res.status(201).json({ message: 'User registered. Verify your email (mocked).' });
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
 
 // Login user
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ message: 'Invalid email or password' });
     }
 
+    console.log('Password from request:', password);
+    console.log('Password from database:', user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match result:', isMatch);
+
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    if (!user.isVerified) {
-      return res.status(400).json({ message: 'Email not verified' });
-    }
-
-    // Generate a JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
@@ -81,6 +81,7 @@ const login = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 const verifyEmail = async (req, res) => {
   try {

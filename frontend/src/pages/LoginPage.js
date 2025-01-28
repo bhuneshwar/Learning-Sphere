@@ -5,7 +5,7 @@ import { loginSuccess } from '../store/authSlice';
 import './LoginPage.css';
 
 const LoginPage = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState(''); // Changed from username to email
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const dispatch = useDispatch();
@@ -13,14 +13,13 @@ const LoginPage = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-          const data = await loginUser({ username, password });
-          dispatch(loginSuccess(data)); // Dispatch user data to Redux
-          window.location.href = '/dashboard'; // Navigate to dashboard
+            const data = await loginUser({ email, password }); // Send email instead of username
+            dispatch(loginSuccess(data)); // Dispatch user data to Redux
+            window.location.href = '/dashboard'; // Navigate to dashboard
         } catch (err) {
-          setError(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || 'Login failed');
         }
-      };
-    
+    };
 
     return (
         <div className="login-container">
@@ -28,11 +27,11 @@ const LoginPage = () => {
                 <h2>Login</h2>
                 {error && <p className="error-message">{error}</p>}
                 <div className="form-group">
-                    <label>Username</label>
+                    <label>Email</label> {/* Updated label */}
                     <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        type="email" // Updated input type to email
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                 </div>

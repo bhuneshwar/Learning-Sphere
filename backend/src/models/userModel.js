@@ -5,9 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['Admin', 'Instructor', 'Learner'], default: 'Learner' },
-  isVerified: { type: Boolean, default: false }, // For email verification
-  resetToken: { type: String }, // For password reset
-  resetTokenExpiry: { type: Date }, // Expiry for reset token
+  resetToken: { type: String },
+  resetTokenExpiry: { type: Date },
 });
 
 // Hash the password before saving

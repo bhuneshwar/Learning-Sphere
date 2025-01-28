@@ -1,11 +1,14 @@
 import React from 'react';
 import '../styles/dashboard.css';
+import { signOut } from '../utils/authUtils';
+import { useNavigate } from 'react-router-dom';
 
 const LearnerDashboard = () => {
   const enrolledCourses = [
     { id: 1, title: 'React Basics', progress: 50 },
     { id: 2, title: 'Advanced JavaScript', progress: 30 },
   ];
+  const navigate = useNavigate();
 
   return (
     <div className="dashboard-container">
@@ -18,6 +21,9 @@ const LearnerDashboard = () => {
           </div>
         ))}
       </div>
+      <button className="logout-button" onClick={() => signOut(navigate)}>
+        Logout
+      </button>
     </div>
   );
 };

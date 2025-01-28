@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/dashboard.css';
+import { signOut } from '../utils/authUtils';
 
 const InstructorDashboard = () => {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ const InstructorDashboard = () => {
           </div>
         ))}
       </div>
+      <button className="logout-button" onClick={() => signOut(navigate)}>
+        Logout
+      </button>
+
     </div>
   );
 };
