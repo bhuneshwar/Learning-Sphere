@@ -1,51 +1,133 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const crypto = require('crypto-js');
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 3600000; // 1 hour expiry
+    await user.save();
+
+    console.log(`Mock Password Reset Token for ${email}: ${resetToken}`);
+
+    res.status(200).json({ message: 'Password reset token generated (mocked).' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 
 // Register a new user
 const register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Create new user
-    const newUser = await User.create({ username, password: hashedPassword, role });
-    res.status(201).json({ message: 'User registered successfully', user: newUser });
-  } catch (err) {
-    res.status(400).json({ message: 'Error registering user', error: err.message });
+    const { email, password, role } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    const user = new User({ email, password, role });
+    await user.save();
+
+    // Generate mock verification token
+    const verificationToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+    console.log(`Mock Email Verification Token for ${email}: ${verificationToken}`);
+
+    res.status(201).json({ message: 'User registered. Verify your email (mocked).' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 // Login user
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username }); // Ensure this query works
+    const { email, password } = req.body;
 
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // User not found
+      return res.status(404).json({ message: 'Invalid email or password' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password); // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' }); // Incorrect password
+      return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT
+    if (!user.isVerified) {
+      return res.status(400).json({ message: 'Email not verified' });
+    }
+
+    // Generate a JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
-    // Respond with token and user data
-    res.json({
-      token,
-      user: { username: user.username, role: user.role },
+    res.status(200).json({ token, user: { email: user.email, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({ message: 'Email verified successfully.' });
+  } catch (error) {
+    res.status(400).json({ message: 'Invalid or expired token', error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
     });
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error', error: err.message });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    user.password = newPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 
 
-module.exports = { register, login };
+
+
+module.exports = { register, login, verifyEmail, forgotPassword, resetPassword };

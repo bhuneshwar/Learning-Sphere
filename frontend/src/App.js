@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
+import RoleBasedDashboard from './pages/RoleBasedDashboard';
 import ProtectedRoute from './utils/ProtectedRoute';
 import CreateCoursePage from './pages/CreateCoursePage';
 
@@ -20,7 +20,7 @@ const App = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <RoleBasedDashboard />
             </ProtectedRoute>
           }
         />
