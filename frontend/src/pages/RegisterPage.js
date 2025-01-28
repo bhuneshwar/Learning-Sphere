@@ -1,49 +1,81 @@
 import React, { useState } from 'react';
 import { registerUser } from '../services/authService';
-import './RegisterPage.css';
+import './RegisterPage.css'; // Create a corresponding CSS file
 
 const RegisterPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    role: 'Learner',
+  });
 
-  const handleRegister = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); // Reset error
     try {
-      await registerUser({ email, password });
+      await registerUser(formData);
       alert('Registration successful. Please log in.');
       window.location.href = '/login';
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+    } catch (error) {
+      alert('Registration failed: ' + error.message);
     }
   };
 
   return (
-    <div className="register-container">
-      <form className="register-form" onSubmit={handleRegister}>
-        <h2>Register</h2>
-        {error && <p className="error-message">{error}</p>}
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit" className="register-button">Register</button>
-      </form>
+    <div className="container">
+      <div className="form-container">
+        <h2>Create Account</h2>
+        <form onSubmit={handleSubmit} className="register-form">
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Enter username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="role">Role</label>
+            <select 
+              id="role" 
+              name="role" 
+              value={formData.role} 
+              onChange={handleChange}
+              className="role-select"
+            >
+              <option value="Learner">Learner</option>
+              <option value="Instructor">Instructor</option>
+            </select>
+          </div>
+          
+          <button type="submit" className="submit-btn">Register</button>
+        </form>
+        
+        <p className="login-link">
+          Already have an account? <a href="/login">Login here</a>
+        </p>
+      </div>
     </div>
   );
 };

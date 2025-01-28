@@ -5,21 +5,20 @@ import { loginSuccess } from '../store/authSlice';
 import './LoginPage.css';
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const dispatch = useDispatch();
 
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(''); // Reset error
-        if (!email.includes('@') || password.length < 6) {
-            setError('Invalid email or password');
+        if (!username || password.length < 6) {
+            setError('Invalid username or password');
             return;
         }
         try {
-            const { data } = await loginUser({ email, password });
+            const { data } = await loginUser({ username, password });
             dispatch(loginSuccess(data));
             window.location.href = '/dashboard';
         } catch (err) {
@@ -33,11 +32,11 @@ const LoginPage = () => {
                 <h2>Login</h2>
                 {error && <p className="error-message">{error}</p>}
                 <div className="form-group">
-                    <label>Email</label>
+                    <label>Username</label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
                 </div>

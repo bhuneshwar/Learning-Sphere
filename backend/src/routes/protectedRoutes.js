@@ -1,10 +1,10 @@
+// src/routes/protectedRoutes.js
 const express = require('express');
-const protect = require('../middlewares/authMiddleware');
-
+const roleMiddleware = require('../middlewares/roleMiddleware');
+const { getUsersByRole } = require('../controllers/userController');
 const router = express.Router();
 
-router.get('/dashboard', protect, (req, res) => {
-  res.json({ message: `Welcome ${req.user.id}` });
-});
+// Route to get users by role
+router.get('/users/:role', roleMiddleware('Admin'), getUsersByRole);
 
 module.exports = router;
