@@ -1,0 +1,17 @@
+.admin-dashboard {
+    text-align: center;
+}
+
+.admin-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.admin-button {
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+}
