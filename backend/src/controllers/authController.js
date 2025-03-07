@@ -131,4 +131,66 @@ const resetPassword = async (req, res) => {
 
 
 
-module.exports = { register, login, verifyEmail, forgotPassword, resetPassword };
+// Get user profile
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('enrolledCourses.course', 'title description coverImage');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Update user profile
+const updateUserProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, bio, profilePicture, preferences } = req.body;
+    
+    // Find user and update profile
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Update fields if provided
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (bio) user.bio = bio;
+    if (profilePicture) user.profilePicture = profilePicture;
+    
+    // Update preferences if provided
+    if (preferences) {
+      if (preferences.notifications !== undefined) {
+        user.preferences.notifications = preferences.notifications;
+      }
+      if (preferences.theme) user.preferences.theme = preferences.theme;
+      if (preferences.language) user.preferences.language = preferences.language;
+    }
+    
+    await user.save();
+    
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        bio: user.bio,
+        profilePicture: user.profilePicture,
+        preferences: user.preferences
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { register, login, verifyEmail, forgotPassword, resetPassword, getUserProfile, updateUserProfile };

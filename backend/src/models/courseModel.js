@@ -1,10 +1,85 @@
 const mongoose = require('mongoose');
-const courseSchema = new mongoose.Schema({
- title: { type: String, required: true },
- description: { type: String, required: true },
- instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: 
-true },
- learners: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
- createdAt: { type: Date, default: Date.now },
+
+// Schema for individual lessons within a section
+const lessonSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  content: { type: String, required: true },
+  contentType: { type: String, enum: ['video', 'text', 'quiz', 'assignment'], default: 'text' },
+  videoUrl: { type: String },
+  duration: { type: Number }, // in minutes
+  order: { type: Number, required: true },
+  isPublished: { type: Boolean, default: false },
+  resources: [{
+    title: { type: String, required: true },
+    type: { type: String, enum: ['pdf', 'link', 'file'], required: true },
+    url: { type: String, required: true }
+  }]
 });
+
+// Schema for sections within a course
+const sectionSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  order: { type: Number, required: true },
+  lessons: [lessonSchema]
+});
+
+// Main course schema
+const courseSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  shortDescription: { type: String },
+  instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  coverImage: { type: String },
+  price: { type: Number, default: 0 },
+  isPublished: { type: Boolean, default: false },
+  category: { type: String, required: true },
+  tags: [{ type: String }],
+  level: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'], default: 'Beginner' },
+  prerequisites: [{ type: String }],
+  learningOutcomes: [{ type: String }],
+  sections: [sectionSchema],
+  totalDuration: { type: Number, default: 0 }, // Calculated field
+  totalLessons: { type: Number, default: 0 }, // Calculated field
+  ratings: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+  reviews: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating: { type: Number, required: true, min: 1, max: 5 },
+    comment: { type: String },
+    date: { type: Date, default: Date.now }
+  }],
+  learners: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Update the updatedAt field on save
+courseSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Calculate total duration and lessons before saving
+courseSchema.pre('save', function(next) {
+  let totalDuration = 0;
+  let totalLessons = 0;
+  
+  this.sections.forEach(section => {
+    totalLessons += section.lessons.length;
+    section.lessons.forEach(lesson => {
+      if (lesson.duration) {
+        totalDuration += lesson.duration;
+      }
+    });
+  });
+  
+  this.totalDuration = totalDuration;
+  this.totalLessons = totalLessons;
+  next();
+});
+
 module.exports = mongoose.model('Course', courseSchema);

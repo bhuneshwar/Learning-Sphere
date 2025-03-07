@@ -2,7 +2,7 @@
 const express = require('express');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
-const { getUsersByRole } = require('../controllers/userController');
+const { getUsersByRole, getUserProfile, updateUserProfile, addAchievement } = require('../controllers/userController');
 const { createCourse } = require('../controllers/courseController');
 const { getAllUsers, updateUserRole, deleteUser, getAllCourses, deleteAnyCourse } = require('../controllers/adminController');
 const router = express.Router();
@@ -21,5 +21,11 @@ router.get('/users/:role', authMiddleware, roleMiddleware('Admin'), getUsersByRo
 
 // Instructor-only route to create a course
 router.post('/create-course', authMiddleware, roleMiddleware('Instructor'), createCourse);
+
+// User profile routes - accessible to authenticated users
+router.get('/profile', authMiddleware, getUserProfile);
+router.get('/profile/:id', authMiddleware, getUserProfile);
+router.put('/profile', authMiddleware, updateUserProfile);
+router.post('/profile/achievements', authMiddleware, addAchievement);
 
 module.exports = router;

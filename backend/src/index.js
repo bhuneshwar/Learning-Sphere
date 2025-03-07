@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const protectedRoutes = require('./routes/protectedRoutes');
 const cors = require('cors');
@@ -22,6 +23,7 @@ app.use(cors({
 // Middleware to parse JSON
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use(errorHandler);
 
