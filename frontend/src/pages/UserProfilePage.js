@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
+import ProfileEducation from '../components/ProfileEducation';
+import ProfileExperience from '../components/ProfileExperience';
+import ProfileCertificates from '../components/ProfileCertificates';
+import { getUserProfile, updateUserProfile, addAchievement, uploadProfilePicture } from '../services/profileService';
 import './UserProfilePage.css';
 
 const UserProfilePage = () => {
@@ -38,14 +42,7 @@ const UserProfilePage = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const config = {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        };
-
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile`, config);
+        const res = await getUserProfile();
         setProfile(res.data);
         setFormData({
           firstName: res.data.firstName || '',
@@ -145,18 +142,7 @@ const UserProfilePage = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      };
-
-      const res = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/profile`,
-        formData,
-        config
-      );
+      const res = await updateUserProfile(formData);
 
       setProfile(res.data);
       setIsEditing(false);
@@ -171,18 +157,7 @@ const UserProfilePage = () => {
     if (!newAchievement.title.trim()) return;
 
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      };
-
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/profile/achievements`,
-        newAchievement,
-        config
-      );
+      const res = await addAchievement(newAchievement);
 
       setProfile({
         ...profile,
@@ -565,6 +540,15 @@ const UserProfilePage = () => {
               </button>
             </div>
           </div>
+          
+          {/* Education Section */}
+          <ProfileEducation />
+          
+          {/* Work Experience Section */}
+          <ProfileExperience />
+          
+          {/* Certificates Section */}
+          <ProfileCertificates />
         </div>
       )}
     </div>

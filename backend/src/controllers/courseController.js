@@ -397,7 +397,30 @@ const updateLesson = async (req, res) => {
     if (videoUrl !== undefined) lesson.videoUrl = videoUrl;
     if (duration !== undefined) lesson.duration = duration;
     if (isPublished !== undefined) lesson.isPublished = isPublished;
-    if (resources) lesson.resources = resources;
+    
+    // Handle resources update - ensure we maintain the existing structure
+    if (resources) {
+      // Validate resources format
+      if (Array.isArray(resources)) {
+        // Validate each resource has required fields
+        const validResources = resources.every(resource => 
+          resource.title && 
+          resource.type && 
+          resource.url && 
+          ['pdf', 'link', 'file'].includes(resource.type)
+        );
+        
+        if (validResources) {
+          lesson.resources = resources;
+        } else {
+          return res.status(400).json({ 
+            message: 'Invalid resource format. Each resource must have title, type, and url fields' 
+          });
+        }
+      } else {
+        return res.status(400).json({ message: 'Resources must be an array' });
+      }
+    }
     
     await course.save();
     
@@ -458,6 +481,51 @@ const trackProgress = async (req, res) => {
   }
 };
 
+// Add resources to a lesson
+const addResourcesToLesson = async (req, res) => {
+  try {
+    const { courseId, sectionId, lessonId } = req.params;
+    const { resources } = req.body;
+    
+    if (!resources || !Array.isArray(resources)) {
+      return res.status(400).json({ message: 'Resources must be provided as an array' });
+    }
+    
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    
+    // Check if user is the instructor of the course
+    if (course.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to update this course' });
+    }
+    
+    // Find the section and lesson
+    const section = course.sections.id(sectionId);
+    if (!section) {
+      return res.status(404).json({ message: 'Section not found' });
+    }
+    
+    const lesson = section.lessons.id(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+    
+    // Add resources to the lesson
+    lesson.resources = [...lesson.resources, ...resources];
+    
+    await course.save();
+    
+    res.status(200).json({
+      message: 'Resources added successfully',
+      resources: lesson.resources
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error adding resources', error: err.message });
+  }
+};
+
 module.exports = { 
   createCourse, 
   enrollInCourse, 
@@ -468,5 +536,6 @@ module.exports = {
   addSection, 
   addLesson,
   updateLesson,
-  trackProgress
+  trackProgress,
+  addResourcesToLesson
 };

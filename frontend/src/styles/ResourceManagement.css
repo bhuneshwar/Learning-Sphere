@@ -1,0 +1,308 @@
+.resource-management {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.resource-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.resource-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.resource-type-btn {
+  padding: 8px 12px;
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.resource-type-btn.active {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
+
+.resource-type-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-resource-btn {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.add-resource-btn:hover {
+  background-color: #218838;
+}
+
+.resource-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.resource-form h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submit-btn {
+  padding: 8px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.cancel-btn {
+  padding: 8px 16px;
+  background-color: #f1f1f1;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.course-resources-section,
+.lesson-resources-section {
+  margin-top: 20px;
+}
+
+.course-resources-section h4,
+.lesson-resources-section h4 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.resource-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.resource-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  transition: transform 0.2s;
+}
+
+.resource-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resource-icon {
+  font-size: 1.5rem;
+  margin-right: 15px;
+  color: #4a90e2;
+  width: 40px;
+  text-align: center;
+}
+
+.resource-content {
+  flex: 1;
+}
+
+.resource-title {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.resource-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.resource-location {
+  margin: 5px 0 0 0;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.public-badge {
+  display: inline-block;
+  background-color: #28a745;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.resource-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.view-btn,
+.edit-btn,
+.delete-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-btn {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+}
+
+.edit-btn {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.delete-btn {
+  background-color: #f8f9fa;
+  color: #dc3545;
+  border: 1px solid #ddd;
+}
+
+.view-btn:hover {
+  background-color: #357ab8;
+}
+
+.edit-btn:hover {
+  background-color: #e9ecef;
+}
+
+.delete-btn:hover {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.no-resources {
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .resource-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .resource-actions {
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .resource-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .resource-icon {
+    margin-bottom: 10px;
+  }
+  
+  .resource-actions {
+    margin-top: 15px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

@@ -9,7 +9,8 @@ const {
   addSection, 
   addLesson,
   updateLesson,
-  trackProgress
+  trackProgress,
+  addResourcesToLesson
 } = require('../controllers/courseController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
@@ -31,5 +32,8 @@ router.put('/:courseId/sections/:sectionId/lessons/:lessonId', authMiddleware, u
 // Enrollment and progress tracking
 router.post('/:id/enroll', authMiddleware, enrollInCourse); // Enroll in a course
 router.post('/:courseId/progress/:lessonId', authMiddleware, trackProgress); // Track progress in a course
+
+// Resource management
+router.post('/:courseId/sections/:sectionId/lessons/:lessonId/resources', authMiddleware, addResourcesToLesson); // Add resources to a lesson
 
 module.exports = router;

@@ -12,8 +12,11 @@ const lessonSchema = new mongoose.Schema({
   isPublished: { type: Boolean, default: false },
   resources: [{
     title: { type: String, required: true },
-    type: { type: String, enum: ['pdf', 'link', 'file'], required: true },
-    url: { type: String, required: true }
+    type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
+    url: { type: String, required: true },
+    description: { type: String, default: '' },
+    isPublic: { type: Boolean, default: false },
+    addedAt: { type: Date, default: Date.now }
   }]
 });
 
@@ -42,6 +45,14 @@ const courseSchema = new mongoose.Schema({
   sections: [sectionSchema],
   totalDuration: { type: Number, default: 0 }, // Calculated field
   totalLessons: { type: Number, default: 0 }, // Calculated field
+  courseResources: [{
+    title: { type: String, required: true },
+    description: { type: String },
+    type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
+    url: { type: String, required: true },
+    isPublic: { type: Boolean, default: false }, // Whether the resource is available before enrollment
+    addedAt: { type: Date, default: Date.now }
+  }],
   ratings: {
     average: { type: Number, default: 0 },
     count: { type: Number, default: 0 }
