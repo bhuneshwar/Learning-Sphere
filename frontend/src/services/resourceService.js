@@ -1,5 +1,23 @@
 import axios from './authService';
 
+// Search resources across courses
+export const searchResources = async (searchParams) => {
+  try {
+    const { query, tags, type } = searchParams;
+    let url = '/resources/search?';
+    
+    // Add query parameters if they exist
+    if (query) url += `query=${encodeURIComponent(query)}&`;
+    if (tags) url += `tags=${encodeURIComponent(tags)}&`;
+    if (type) url += `type=${encodeURIComponent(type)}`;
+    
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Error searching resources' };
+  }
+};
+
 // Get all resources for a specific course
 export const getCourseResources = async (courseId) => {
   try {

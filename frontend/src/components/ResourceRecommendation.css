@@ -1,0 +1,141 @@
+.resource-recommendation {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.resource-recommendation h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.recommendation-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.recommendation-item {
+  display: flex;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.recommendation-icon {
+  font-size: 2rem;
+  margin-right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  color: #4a6cf7;
+  background-color: rgba(74, 108, 247, 0.1);
+  border-radius: 12px;
+}
+
+.recommendation-icon .fa-file-pdf {
+  color: #e74c3c;
+}
+
+.recommendation-icon .fa-video {
+  color: #3498db;
+}
+
+.recommendation-icon .fa-headphones {
+  color: #9b59b6;
+}
+
+.recommendation-icon .fa-image {
+  color: #2ecc71;
+}
+
+.recommendation-details {
+  flex: 1;
+}
+
+.recommendation-details h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.recommendation-reason {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.recommendation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.recommendation-tag {
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.recommendation-tag:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.recommendation-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a6cf7;
+  font-size: 0.95rem;
+  text-decoration: none;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.recommendation-link:hover {
+  color: #3a5cd8;
+}
+
+.resource-recommendation.loading,
+.resource-recommendation.error {
+  padding: 15px;
+  text-align: center;
+  color: #666;
+}
+
+.resource-recommendation.error {
+  color: #e74c3c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .recommendation-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,13 +6,15 @@ const {
   updateResource, 
   deleteResource,
   updateCourseResource,
-  deleteCourseResource 
+  deleteCourseResource,
+  searchResources 
 } = require('../controllers/resourceController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Resource management routes
+router.get('/search', authMiddleware, searchResources);
 router.get('/courses/:courseId/resources', authMiddleware, getCourseResources);
 
 // Course-level resource routes

@@ -4,6 +4,7 @@ import axios from '../services/authService';
 import { useSelector } from 'react-redux';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import ResourceRecommendation from '../components/ResourceRecommendation';
 import './CourseDetailPage.css';
 
 const CourseDetailPage = () => {
@@ -236,6 +237,11 @@ const CourseDetailPage = () => {
                   <h3>Prerequisites</h3>
                   <p>{course.prerequisites}</p>
                 </div>
+              )}
+              
+              {/* Resource Recommendations */}
+              {enrollmentStatus === 'enrolled' && (
+                <ResourceRecommendation courseId={id} />
               )}
             </div>
           )}

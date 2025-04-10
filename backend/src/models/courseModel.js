@@ -15,6 +15,7 @@ const lessonSchema = new mongoose.Schema({
     type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
     url: { type: String, required: true },
     description: { type: String, default: '' },
+    tags: [{ type: String }], // Tags for categorizing and filtering resources
     isPublic: { type: Boolean, default: false },
     addedAt: { type: Date, default: Date.now }
   }]
@@ -50,6 +51,7 @@ const courseSchema = new mongoose.Schema({
     description: { type: String },
     type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
     url: { type: String, required: true },
+    tags: [{ type: String }], // Tags for categorizing and filtering resources
     isPublic: { type: Boolean, default: false }, // Whether the resource is available before enrollment
     addedAt: { type: Date, default: Date.now }
   }],

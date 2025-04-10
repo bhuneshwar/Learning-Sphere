@@ -1,5 +1,119 @@
 const Course = require('../models/Course');
 
+// Search resources across courses
+const searchResources = async (req, res) => {
+  try {
+    const { query, tags, type } = req.query;
+    
+    // Find all courses the user has access to
+    let courseQuery = {};
+    
+    // If user is not admin or instructor, only show courses they're enrolled in
+    if (req.user.role !== 'Admin' && req.user.role !== 'Instructor') {
+      courseQuery = { learners: req.user.id };
+    }
+    
+    const courses = await Course.find(courseQuery);
+    
+    if (!courses || courses.length === 0) {
+      return res.status(200).json({ resources: [] });
+    }
+    
+    // Collect all resources that match the search criteria
+    let allResources = [];
+    
+    // Process each course
+    courses.forEach(course => {
+      // Process course-level resources
+      if (course.courseResources && course.courseResources.length > 0) {
+        const filteredResources = course.courseResources.filter(resource => {
+          // Filter by public status for non-instructors
+          if (req.user.role !== 'Admin' && req.user.role !== 'Instructor' && 
+              course.instructor.toString() !== req.user.id && 
+              !resource.isPublic) {
+            return false;
+          }
+          
+          // Filter by search query
+          const matchesQuery = !query || 
+            resource.title.toLowerCase().includes(query.toLowerCase()) || 
+            (resource.description && resource.description.toLowerCase().includes(query.toLowerCase()));
+          
+          // Filter by tags
+          const matchesTags = !tags || 
+            (resource.tags && resource.tags.some(tag => 
+              tags.split(',').map(t => t.trim().toLowerCase()).includes(tag.toLowerCase())
+            ));
+          
+          // Filter by type
+          const matchesType = !type || resource.type === type;
+          
+          return matchesQuery && matchesTags && matchesType;
+        });
+        
+        // Add course info to each resource
+        const courseResources = filteredResources.map(resource => ({
+          ...resource.toObject(),
+          courseId: course._id,
+          courseTitle: course.title,
+          resourceType: 'course'
+        }));
+        
+        allResources = [...allResources, ...courseResources];
+      }
+      
+      // Process lesson-level resources
+      course.sections.forEach(section => {
+        section.lessons.forEach(lesson => {
+          if (lesson.resources && lesson.resources.length > 0) {
+            const filteredResources = lesson.resources.filter(resource => {
+              // Filter by search query
+              const matchesQuery = !query || 
+                resource.title.toLowerCase().includes(query.toLowerCase()) || 
+                (resource.description && resource.description.toLowerCase().includes(query.toLowerCase()));
+              
+              // Filter by tags
+              const matchesTags = !tags || 
+                (resource.tags && resource.tags.some(tag => 
+                  tags.split(',').map(t => t.trim().toLowerCase()).includes(tag.toLowerCase())
+                ));
+              
+              // Filter by type
+              const matchesType = !type || resource.type === type;
+              
+              return matchesQuery && matchesTags && matchesType;
+            });
+            
+            // Add course, section, and lesson info to each resource
+            const lessonResources = filteredResources.map(resource => ({
+              ...resource.toObject(),
+              courseId: course._id,
+              courseTitle: course.title,
+              sectionId: section._id,
+              sectionTitle: section.title,
+              lessonId: lesson._id,
+              lessonTitle: lesson.title,
+              resourceType: 'lesson'
+            }));
+            
+            allResources = [...allResources, ...lessonResources];
+          }
+        });
+      });
+    });
+    
+    // Sort resources by title
+    allResources.sort((a, b) => a.title.localeCompare(b.title));
+    
+    res.status(200).json({
+      count: allResources.length,
+      resources: allResources
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error searching resources', error: err.message });
+  }
+};
+
 // Get all resources for a specific course
 const getCourseResources = async (req, res) => {
   try {
@@ -45,7 +159,7 @@ const getCourseResources = async (req, res) => {
 const addCourseResource = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { title, type, url, description, isPublic } = req.body;
+    const { title, type, url, description, isPublic, tags } = req.body;
     
     if (!title || !type || !url) {
       return res.status(400).json({ message: 'Title, type, and URL are required' });
@@ -72,6 +186,7 @@ const addCourseResource = async (req, res) => {
       type,
       url,
       description: description || '',
+      tags: tags || [],
       isPublic: isPublic || false,
       addedAt: new Date()
     };
@@ -93,7 +208,7 @@ const addCourseResource = async (req, res) => {
 const updateResource = async (req, res) => {
   try {
     const { courseId, sectionId, lessonId, resourceId } = req.params;
-    const { title, type, url, description } = req.body;
+    const { title, type, url, description, tags } = req.body;
     
     const course = await Course.findById(courseId);
     if (!course) {
@@ -126,6 +241,7 @@ const updateResource = async (req, res) => {
     if (type) resource.type = type;
     if (url) resource.url = url;
     if (description !== undefined) resource.description = description;
+    if (tags !== undefined) resource.tags = tags;
     
     await course.save();
     
@@ -186,7 +302,7 @@ const deleteResource = async (req, res) => {
 const updateCourseResource = async (req, res) => {
   try {
     const { courseId, resourceId } = req.params;
-    const { title, type, url, description, isPublic } = req.body;
+    const { title, type, url, description, isPublic, tags } = req.body;
     
     const course = await Course.findById(courseId);
     if (!course) {
@@ -214,6 +330,7 @@ const updateCourseResource = async (req, res) => {
     if (type) resource.type = type;
     if (url) resource.url = url;
     if (description !== undefined) resource.description = description;
+    if (tags !== undefined) resource.tags = tags;
     if (isPublic !== undefined) resource.isPublic = isPublic;
     
     await course.save();
@@ -269,7 +386,7 @@ const deleteCourseResource = async (req, res) => {
 const addLessonResource = async (req, res) => {
   try {
     const { courseId, sectionId, lessonId } = req.params;
-    const { title, type, url, description, isPublic } = req.body;
+    const { title, type, url, description, isPublic, tags } = req.body;
     
     if (!title || !type || !url) {
       return res.status(400).json({ message: 'Title, type, and URL are required' });
@@ -307,6 +424,7 @@ const addLessonResource = async (req, res) => {
       type,
       url,
       description: description || '',
+      tags: tags || [],
       isPublic: isPublic || false,
       addedAt: new Date()
     };
@@ -331,5 +449,6 @@ module.exports = {
   updateResource,
   deleteResource,
   updateCourseResource,
-  deleteCourseResource
+  deleteCourseResource,
+  searchResources
 };

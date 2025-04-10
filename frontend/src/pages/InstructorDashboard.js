@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import InstructorProfileSection from '../components/InstructorProfileSection';
 import '../styles/dashboard.css';
 import './InstructorDashboard.css';
 import { signOut } from '../utils/authUtils';
@@ -9,6 +11,7 @@ import { signOut } from '../utils/authUtils';
 const InstructorDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const user = useSelector((state) => state.auth?.user) || JSON.parse(localStorage.getItem('user'));
   
   // Mock data - in a real app, this would come from an API
   const createdCourses = [
@@ -40,6 +43,11 @@ const InstructorDashboard = () => {
       case 'overview':
         return (
           <div className="dashboard-overview">
+            <div className="dashboard-welcome">
+              <h1>Welcome, {user?.firstName || 'Instructor'}!</h1>
+              <p>Here's an overview of your teaching activity</p>
+            </div>
+            
             <div className="dashboard-stats">
               <div className="stat-card">
                 <div className="stat-icon students-icon">👨‍🎓</div>
@@ -112,7 +120,7 @@ const InstructorDashboard = () => {
                           <p>{task.course}</p>
                         </div>
                         <div className="task-date">
-                          <span className="date">{task.dueDate}</span>
+                          <span className="date">Due: {task.dueDate}</span>
                         </div>
                       </li>
                     ))}
@@ -129,13 +137,15 @@ const InstructorDashboard = () => {
                     {studentFeedback.slice(0, 2).map(feedback => (
                       <li key={feedback.id} className="feedback-item">
                         <div className="feedback-rating">
-                          {Array(feedback.rating).fill('★').join('')}
+                          {'★'.repeat(feedback.rating)}{'☆'.repeat(5 - feedback.rating)}
                         </div>
                         <div className="feedback-info">
-                          <h4>{feedback.studentName}</h4>
-                          <p className="feedback-course">{feedback.courseName}</p>
-                          <p className="feedback-comment">"{feedback.comment}"</p>
-                          <span className="date">Received on {feedback.date}</span>
+                          <h4>{feedback.courseName}</h4>
+                          <p>"{feedback.comment}"</p>
+                          <div className="feedback-meta">
+                            <span className="student-name">- {feedback.studentName}</span>
+                            <span className="date">{feedback.date}</span>
+                          </div>
                         </div>
                       </li>
                     ))}
@@ -151,10 +161,7 @@ const InstructorDashboard = () => {
       case 'courses':
         return (
           <div className="dashboard-courses">
-            <div className="section-header">
-              <h2>Your Courses</h2>
-              <button className="create-course-btn" onClick={() => navigate('/create-course')}>Create New Course</button>
-            </div>
+            <h2>My Courses</h2>
             <div className="course-list">
               {createdCourses.map(course => (
                 <div key={course.id} className="course-item">
@@ -163,33 +170,21 @@ const InstructorDashboard = () => {
                   </div>
                   <div className="course-details">
                     <h3>{course.title}</h3>
-                    <div className="course-meta-grid">
-                      <div className="meta-item">
-                        <span className="meta-label">Students</span>
-                        <span className="meta-value">{course.students}</span>
-                      </div>
-                      <div className="meta-item">
-                        <span className="meta-label">Rating</span>
-                        <span className="meta-value">{course.rating} ★</span>
-                      </div>
-                      <div className="meta-item">
-                        <span className="meta-label">Revenue</span>
-                        <span className="meta-value">${course.revenue}</span>
-                      </div>
-                      <div className="meta-item">
-                        <span className="meta-label">Last Updated</span>
-                        <span className="meta-value">{course.lastUpdated}</span>
-                      </div>
+                    <div className="course-meta">
+                      <span><i className="fas fa-user-graduate"></i> {course.students} students</span>
+                      <span><i className="fas fa-star"></i> {course.rating}</span>
+                      <span><i className="fas fa-dollar-sign"></i> ${course.revenue}</span>
                     </div>
+                    <p className="last-updated">Last updated: {course.lastUpdated}</p>
                   </div>
                   <div className="course-actions">
                     <button className="primary-btn" onClick={() => navigate(`/course/${course.id}/manage`)}>Manage</button>
-                    <button className="secondary-btn" onClick={() => navigate(`/course/${course.id}/edit`)}>Edit</button>
                     <button className="secondary-btn" onClick={() => navigate(`/course/${course.id}/analytics`)}>Analytics</button>
                   </div>
                 </div>
               ))}
             </div>
+            <button className="create-course-btn" onClick={() => navigate('/create-course')}>Create New Course</button>
           </div>
         );
       case 'analytics':
@@ -201,31 +196,22 @@ const InstructorDashboard = () => {
                 <div key={course.id} className="analytics-item">
                   <h3>{course.title}</h3>
                   <div className="analytics-grid">
-                    <div className="analytics-metric">
+                    <div className="analytics-card">
                       <h4>Completion Rate</h4>
-                      <div className="metric-chart">
-                        <div className="chart-bar">
-                          <div className="chart-fill" style={{ width: `${course.completionRate}%` }}></div>
-                        </div>
-                        <span className="metric-value">{course.completionRate}%</span>
+                      <div className="progress-circle">
+                        <div className="progress-value">{course.completionRate}%</div>
                       </div>
                     </div>
-                    <div className="analytics-metric">
-                      <h4>Average Quiz Score</h4>
-                      <div className="metric-chart">
-                        <div className="chart-bar">
-                          <div className="chart-fill" style={{ width: `${course.avgQuizScore}%` }}></div>
-                        </div>
-                        <span className="metric-value">{course.avgQuizScore}%</span>
+                    <div className="analytics-card">
+                      <h4>Avg. Quiz Score</h4>
+                      <div className="progress-circle">
+                        <div className="progress-value">{course.avgQuizScore}%</div>
                       </div>
                     </div>
-                    <div className="analytics-metric">
+                    <div className="analytics-card">
                       <h4>Student Engagement</h4>
-                      <div className="metric-chart">
-                        <div className="chart-bar">
-                          <div className="chart-fill" style={{ width: `${course.studentEngagement}%` }}></div>
-                        </div>
-                        <span className="metric-value">{course.studentEngagement}%</span>
+                      <div className="progress-circle">
+                        <div className="progress-value">{course.studentEngagement}%</div>
                       </div>
                     </div>
                   </div>
@@ -239,43 +225,81 @@ const InstructorDashboard = () => {
         return (
           <div className="dashboard-feedback">
             <h2>Student Feedback</h2>
-            <div className="feedback-grid">
+            <div className="feedback-list-full">
               {studentFeedback.map(feedback => (
                 <div key={feedback.id} className="feedback-card">
                   <div className="feedback-header">
-                    <h3>{feedback.studentName}</h3>
+                    <h3>{feedback.courseName}</h3>
                     <div className="feedback-rating">
-                      {Array(feedback.rating).fill('★').join('')}
-                      {Array(5 - feedback.rating).fill('☆').join('')}
+                      {'★'.repeat(feedback.rating)}{'☆'.repeat(5 - feedback.rating)}
                     </div>
                   </div>
-                  <p className="feedback-course">{feedback.courseName}</p>
-                  <p className="feedback-comment">"{feedback.comment}"</p>
+                  <div className="feedback-body">
+                    <p>"{feedback.comment}"</p>
+                  </div>
                   <div className="feedback-footer">
+                    <span className="student-name">- {feedback.studentName}</span>
                     <span className="date">{feedback.date}</span>
-                    <button className="reply-btn">Reply</button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         );
+      case 'profile':
+        return <InstructorProfileSection />;
+      case 'settings':
+        return (
+          <div className="dashboard-settings">
+            <h2>Instructor Settings</h2>
+            <div className="settings-form">
+              <div className="form-group">
+                <label>Email Notifications</label>
+                <div className="toggle-switch">
+                  <input type="checkbox" id="email-notifications" defaultChecked />
+                  <label htmlFor="email-notifications"></label>
+                </div>
+                <p className="setting-description">Receive email notifications about student enrollments and feedback</p>
+              </div>
+              
+              <div className="form-group">
+                <label>Payment Method</label>
+                <select defaultValue="paypal">
+                  <option value="paypal">PayPal</option>
+                  <option value="bank">Bank Transfer</option>
+                  <option value="stripe">Stripe</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Course Visibility</label>
+                <div className="toggle-switch">
+                  <input type="checkbox" id="course-visibility" defaultChecked />
+                  <label htmlFor="course-visibility"></label>
+                </div>
+                <p className="setting-description">Make your courses visible in search results</p>
+              </div>
+              
+              <button className="save-settings-btn">Save Settings</button>
+            </div>
+          </div>
+        );
       default:
-        return <div>Tab content not found</div>;
+        return <div>Select a tab</div>;
     }
   };
 
   return (
-    <div className="instructor-dashboard-container">
+    <div className="dashboard-container">
       <Header />
-      <div className="dashboard-main">
+      <main className="dashboard-main">
         <div className="dashboard-sidebar">
-          <div className="user-info">
+          <div className="user-welcome">
             <div className="user-avatar">
-              <span>JD</span>
+              {user?.firstName?.charAt(0) || 'I'}
             </div>
-            <h3>John Doe</h3>
-            <p>Instructor</p>
+            <h3>{user?.firstName} {user?.lastName || ''}</h3>
+            <p>{user?.role || 'Instructor'}</p>
           </div>
           <nav className="dashboard-nav">
             <ul>
@@ -299,15 +323,26 @@ const InstructorDashboard = () => {
                   <i className="fas fa-comment"></i> Feedback
                 </button>
               </li>
-              <li>
-                <button onClick={() => navigate('/create-course')}>
-                  <i className="fas fa-plus"></i> Create Course
+              <li className={activeTab === 'profile' ? 'active' : ''}>
+                <button onClick={() => setActiveTab('profile')}>
+                  <i className="fas fa-user"></i> Profile
+                </button>
+              </li>
+              <li className={activeTab === 'settings' ? 'active' : ''}>
+                <button onClick={() => setActiveTab('settings')}>
+                  <i className="fas fa-cog"></i> Settings
                 </button>
               </li>
             </ul>
           </nav>
+          <button className="logout-btn" onClick={() => signOut(navigate)}>
+            <i className="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
-      </div>
+        <div className="dashboard-content">
+          {renderTabContent()}
+        </div>
+      </main>
       <Footer />
     </div>
   );

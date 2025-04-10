@@ -4,3 +4,13 @@ export const signOut = (navigate) => {
     navigate('/login'); // Redirect to login page
   };
   
+// Function to get authentication configuration for API requests
+export const getAuthConfig = () => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+};
+  

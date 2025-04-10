@@ -11,6 +11,7 @@
 - **Dynamic Dashboard**: Personalized user experience post-login.
 - **Protected Routes**: Access control using authentication middleware.
 - **Responsive Design**: Fully responsive UI with clean and modern styling.
+- **Resource Download Tracking**: Analytics system that tracks resource downloads and provides statistics for instructors.
 
 ### 🛠️ Technology Stack
 - **Frontend**: React.js with Redux Toolkit for state management.

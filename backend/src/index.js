@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
+const resourceDownloadRoutes = require('./routes/resourceDownloadRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const protectedRoutes = require('./routes/protectedRoutes');
 const cors = require('cors');
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/resources', resourceRoutes);
+app.use('/api/resource-downloads', resourceDownloadRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use(errorHandler);
 

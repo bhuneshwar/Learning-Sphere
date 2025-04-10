@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import LearnerProfileSection from '../components/LearnerProfileSection';
 import '../styles/dashboard.css';
 import './LearnerDashboard.css';
 import { signOut } from '../utils/authUtils';
-// Removed duplicate import of useNavigate
 
 const LearnerDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const user = useSelector((state) => state.auth?.user) || JSON.parse(localStorage.getItem('user'));
   
   // Mock data - in a real app, this would come from an API
   const enrolledCourses = [
@@ -40,6 +42,11 @@ const LearnerDashboard = () => {
       case 'overview':
         return (
           <div className="dashboard-overview">
+            <div className="dashboard-welcome">
+              <h1>Welcome, {user?.firstName || 'Learner'}!</h1>
+              <p>Here's what's happening with your learning journey</p>
+            </div>
+            
             <div className="dashboard-section">
               <div className="section-header">
                 <h2>Continue Learning</h2>
@@ -185,53 +192,66 @@ const LearnerDashboard = () => {
             </div>
           </div>
         );
+      case 'profile':
+        return <LearnerProfileSection />;
       case 'settings':
         return (
           <div className="dashboard-settings">
             <h2>Learning Preferences</h2>
             <div className="settings-form">
               <div className="form-group">
-                <label>Learning Reminder</label>
-                <select defaultValue="daily">
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="none">None</option>
-                </select>
-              </div>
-              <div className="form-group">
                 <label>Email Notifications</label>
                 <div className="toggle-switch">
                   <input type="checkbox" id="email-notifications" defaultChecked />
                   <label htmlFor="email-notifications"></label>
                 </div>
+                <p className="setting-description">Receive email notifications about course updates and deadlines</p>
               </div>
+              
               <div className="form-group">
-                <label>Course Recommendations</label>
-                <div className="toggle-switch">
-                  <input type="checkbox" id="course-recommendations" defaultChecked />
-                  <label htmlFor="course-recommendations"></label>
+                <label>Language</label>
+                <select defaultValue="en">
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Theme</label>
+                <div className="theme-options">
+                  <div className="theme-option active">
+                    <div className="theme-preview light"></div>
+                    <span>Light</span>
+                  </div>
+                  <div className="theme-option">
+                    <div className="theme-preview dark"></div>
+                    <span>Dark</span>
+                  </div>
                 </div>
               </div>
+              
               <button className="save-settings-btn">Save Preferences</button>
             </div>
           </div>
         );
       default:
-        return <div>Tab content not found</div>;
+        return <div>Select a tab</div>;
     }
   };
 
   return (
-    <div className="learner-dashboard-container">
+    <div className="dashboard-container">
       <Header />
-      <div className="dashboard-main">
+      <main className="dashboard-main">
         <div className="dashboard-sidebar">
-          <div className="user-info">
+          <div className="user-welcome">
             <div className="user-avatar">
-              <span>JD</span>
+              {user?.firstName?.charAt(0) || 'U'}
             </div>
-            <h3>John Doe</h3>
-            <p>Learner</p>
+            <h3>{user?.firstName} {user?.lastName || ''}</h3>
+            <p>{user?.role || 'Learner'}</p>
           </div>
           <nav className="dashboard-nav">
             <ul>
@@ -250,6 +270,11 @@ const LearnerDashboard = () => {
                   <i className="fas fa-trophy"></i> Achievements
                 </button>
               </li>
+              <li className={activeTab === 'profile' ? 'active' : ''}>
+                <button onClick={() => setActiveTab('profile')}>
+                  <i className="fas fa-user"></i> Profile
+                </button>
+              </li>
               <li className={activeTab === 'settings' ? 'active' : ''}>
                 <button onClick={() => setActiveTab('settings')}>
                   <i className="fas fa-cog"></i> Settings
@@ -257,11 +282,14 @@ const LearnerDashboard = () => {
               </li>
             </ul>
           </nav>
+          <button className="logout-btn" onClick={() => signOut(navigate)}>
+            <i className="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
         <div className="dashboard-content">
           {renderTabContent()}
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

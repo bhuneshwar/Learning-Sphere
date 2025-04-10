@@ -7,7 +7,8 @@ const ResourceManager = ({ courseId, sectionId, lessonId, existingResources = []
   const [newResource, setNewResource] = useState({
     title: '',
     type: 'pdf',
-    url: ''
+    url: '',
+    tags: []
   });
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState('');
@@ -51,7 +52,8 @@ const ResourceManager = ({ courseId, sectionId, lessonId, existingResources = []
       setNewResource({
         title: '',
         type: 'pdf',
-        url: ''
+        url: '',
+        tags: []
       });
       
       setSuccess('Resource added successfully');
@@ -177,6 +179,23 @@ const ResourceManager = ({ courseId, sectionId, lessonId, existingResources = []
             onChange={handleInputChange}
             placeholder="https://example.com/resource"
             required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Tags (comma separated)</label>
+          <input
+            type="text"
+            name="tags"
+            value={Array.isArray(newResource.tags) ? newResource.tags.join(', ') : ''}
+            onChange={(e) => {
+              const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+              setNewResource({
+                ...newResource,
+                tags: tagsArray
+              });
+            }}
+            placeholder="e.g. important, exam, reference"
           />
         </div>
         

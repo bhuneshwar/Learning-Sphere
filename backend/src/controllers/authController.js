@@ -62,11 +62,7 @@ const login = async (req, res) => {
       return res.status(404).json({ message: 'Invalid email or password' });
     }
 
-    console.log('Password from request:', password);
-    console.log('Password from database:', user.password);
-
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match result:', isMatch);
 
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid email or password' });
@@ -76,7 +72,15 @@ const login = async (req, res) => {
       expiresIn: '1h',
     });
 
-    res.status(200).json({ token, user: { email: user.email, role: user.role } });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 // 1 hour
+    });
+
+    // Remove token from response body
+    res.status(200).json({ user: { email: user.email, role: user.role } });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

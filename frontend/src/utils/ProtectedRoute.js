@@ -1,9 +1,10 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const ProtectedRoute = ({ children, role }) => {
-  const token = localStorage.getItem('token'); // JWT token
-  const user = JSON.parse(localStorage.getItem('user')); // User info from storage
+  const { token } = useSelector(state => state.auth);
+  const user = useSelector(state => state.auth.user);
 
   if (!token) {
     return <Navigate to="/login" />; // Redirect to login if not authenticated
