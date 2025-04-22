@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../services/authService';
 import { loginSuccess } from '../store/authSlice';
 import './LoginPage.css';
@@ -9,13 +10,21 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             const data = await loginUser({ email, password }); // Send email instead of username
             dispatch(loginSuccess(data)); // Dispatch user data to Redux
-            window.location.href = '/dashboard'; // Navigate to dashboard
+            // Redirect based on user role
+            if (data.user.role === 'Admin') {
+                navigate('/admin'); // Admin has its own dashboard
+            } else if (data.user.role === 'Instructor' || data.user.role === 'Learner') {
+                navigate('/dashboard'); // RoleBasedDashboard will handle both roles
+            } else {
+                navigate('/'); // Fallback or handle other roles
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         }
@@ -50,7 +59,7 @@ const LoginPage = () => {
                 <button
                     type="button"
                     className="register-button"
-                    onClick={() => (window.location.href = '/register')}
+                    onClick={() => navigate('/register')}
                 >
                     Register
                 </button>

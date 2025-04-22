@@ -10,6 +10,17 @@ const lessonSchema = new mongoose.Schema({
   duration: { type: Number }, // in minutes
   order: { type: Number, required: true },
   isPublished: { type: Boolean, default: false },
+  quizQuestions: [{
+    question: { type: String, required: true },
+    options: [{ 
+      text: { type: String, required: true },
+      isCorrect: { type: Boolean, default: false }
+    }],
+    explanation: { type: String },
+    points: { type: Number, default: 1 }
+  }],
+  videoThumbnail: { type: String },
+  transcript: { type: String },
   resources: [{
     title: { type: String, required: true },
     type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },

@@ -1,5 +1,62 @@
 const Course = require('../models/courseModel');
 
+// Submit quiz answers
+const submitQuiz = async (req, res) => {
+  try {
+    const { courseId, sectionId, lessonId, answers } = req.body;
+    const userId = req.user.id;
+
+    // Find the course
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    // Find the section and lesson
+    const section = course.sections.id(sectionId);
+    if (!section) {
+      return res.status(404).json({ message: 'Section not found' });
+    }
+
+    const lesson = section.lessons.id(lessonId);
+    if (!lesson || lesson.contentType !== 'quiz') {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+
+    // Calculate score
+    let score = 0;
+    const quizResults = lesson.quizQuestions.map((question, index) => {
+      const userAnswer = answers[index];
+      const isCorrect = question.options[userAnswer]?.isCorrect;
+      if (isCorrect) score += question.points;
+      return {
+        question: question.question,
+        userAnswer,
+        correctAnswer: question.options.findIndex(opt => opt.isCorrect),
+        isCorrect,
+        explanation: question.explanation
+      };
+    });
+
+    // Update user progress
+    const totalPoints = lesson.quizQuestions.reduce((sum, q) => sum + q.points, 0);
+    const percentage = Math.round((score / totalPoints) * 100);
+
+    // Save quiz results to user's progress
+    // Implementation depends on your progress tracking system
+
+    res.status(200).json({
+      message: 'Quiz submitted successfully',
+      score,
+      totalPoints,
+      percentage,
+      results: quizResults
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error submitting quiz', error: err.message });
+  }
+};
+
 // Create a course
 const createCourse = async (req, res) => {
   try {
@@ -20,6 +77,13 @@ const createCourse = async (req, res) => {
     if (!title || !description || !category) {
       return res.status(400).json({ message: 'Title, description, and category are required' });
     }
+    
+    const { sections } = req.body;
+    
+    // Validate sections structure if provided
+    if (sections && !Array.isArray(sections)) {
+      return res.status(400).json({ message: 'Sections must be an array' });
+    }
 
     // Use the instructor's ID from the authenticated request
     const instructor = req.user.id;
@@ -36,7 +100,8 @@ const createCourse = async (req, res) => {
       learningOutcomes: learningOutcomes || [],
       price: price || 0,
       coverImage,
-      isPublished: false // Default to unpublished
+      isPublished: false, // Default to unpublished
+      sections: sections || []
     });
 
     res.status(201).json({
@@ -526,7 +591,8 @@ const addResourcesToLesson = async (req, res) => {
   }
 };
 
-module.exports = { 
+module.exports = {
+  submitQuiz, 
   createCourse, 
   enrollInCourse, 
   getCourses, 

@@ -30,9 +30,9 @@ const forgotPassword = async (req, res) => {
 // Register a new user
 const register = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, firstName, lastName } = req.body;
 
-    if (!email || !password || !role) {
+    if (!email || !password || !role || !firstName || !lastName) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -41,7 +41,13 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    const user = new User({ email: email.toLowerCase(), password, role });
+    const user = new User({ 
+      email: email.toLowerCase(), 
+      password, 
+      role,
+      firstName,
+      lastName
+    });
     await user.save();
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -79,8 +85,16 @@ const login = async (req, res) => {
       maxAge: 3600000 // 1 hour
     });
 
-    // Remove token from response body
-    res.status(200).json({ user: { email: user.email, role: user.role } });
+    res.status(200).json({ 
+      user: { 
+        email: user.email, 
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id
+      },
+      token
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

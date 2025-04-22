@@ -10,7 +10,8 @@ const {
   addLesson,
   updateLesson,
   trackProgress,
-  addResourcesToLesson
+  addResourcesToLesson,
+  submitQuiz
 } = require('../controllers/courseController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
@@ -35,5 +36,8 @@ router.post('/:courseId/progress/:lessonId', authMiddleware, trackProgress); // 
 
 // Resource management
 router.post('/:courseId/sections/:sectionId/lessons/:lessonId/resources', authMiddleware, addResourcesToLesson); // Add resources to a lesson
+
+// Quiz submission
+router.post('/:courseId/sections/:sectionId/lessons/:lessonId/submit-quiz', authMiddleware, submitQuiz); // Submit quiz answers
 
 module.exports = router;

@@ -4,6 +4,8 @@ import './RegisterPage.css';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     role: 'Learner',
@@ -37,6 +39,30 @@ const RegisterPage = () => {
         <h2>Create Account</h2>
         {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit} className="register-form">
+          <div className="form-group">
+            <label htmlFor="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              placeholder="Enter first name"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              placeholder="Enter last name"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
