@@ -60,7 +60,9 @@ const submitQuiz = async (req, res) => {
 // Create a course
 const createCourse = async (req, res) => {
   try {
-    const { 
+    // Extract data from request body
+    // Handle both JSON and FormData formats
+    let { 
       title, 
       description, 
       shortDescription,
@@ -70,15 +72,82 @@ const createCourse = async (req, res) => {
       prerequisites,
       learningOutcomes,
       price,
-      coverImage
+      coverImage,
+      sections
     } = req.body;
+    
+    // Log the raw request body for debugging
+    console.log('Raw request body:', req.body);
+    
+    // Ensure required fields are properly extracted from FormData
+    if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+      console.log('Processing multipart/form-data request');
+      // Convert empty strings to null/undefined to avoid validation issues
+      title = title || null;
+      description = description || null;
+      category = category || null;
+      
+      // Handle learningObjectives field which might be named differently in the frontend
+      if (req.body.learningObjectives && !learningOutcomes) {
+        learningOutcomes = req.body.learningObjectives;
+      }
+    }
+    
+    // Parse JSON strings if they were sent as FormData
+    if (typeof tags === 'string') {
+      try { 
+        tags = tags.startsWith('[') ? JSON.parse(tags) : tags.split(',').map(tag => tag.trim());
+      } catch (e) { 
+        console.log('Error parsing tags:', e);
+        tags = []; 
+      }
+    }
+    
+    if (typeof prerequisites === 'string') {
+      try { 
+        prerequisites = prerequisites.startsWith('[') ? JSON.parse(prerequisites) : prerequisites.split(',').map(p => p.trim());
+      } catch (e) { 
+        console.log('Error parsing prerequisites:', e);
+        prerequisites = []; 
+      }
+    }
+    
+    if (typeof learningOutcomes === 'string') {
+      try { 
+        learningOutcomes = learningOutcomes.startsWith('[') ? JSON.parse(learningOutcomes) : learningOutcomes.split(',').map(o => o.trim());
+      } catch (e) { 
+        console.log('Error parsing learningOutcomes:', e);
+        learningOutcomes = []; 
+      }
+    }
+    
+    if (typeof sections === 'string') {
+      try { 
+        sections = sections.startsWith('[') ? JSON.parse(sections) : [];
+      } catch (e) { 
+        console.log('Error parsing sections:', e);
+        sections = []; 
+      }
+    }
+
+    // Handle price conversion
+    if (typeof price === 'string') {
+      price = parseFloat(price) || 0;
+    }
+    
+    // Handle duration field which might be present in the request but not used in the model
+    // We don't need to do anything with it as it's not part of our course model
+
+    // Log the processed data for debugging
+    console.log('Processed course data:', { title, description, category });
 
     // Validate required fields
     if (!title || !description || !category) {
-      return res.status(400).json({ message: 'Title, description, and category are required' });
+      return res.status(400).json({ 
+        message: 'Title, description, and category are required',
+        receivedData: { title: !!title, description: !!description, category: !!category }
+      });
     }
-    
-    const { sections } = req.body;
     
     // Validate sections structure if provided
     if (sections && !Array.isArray(sections)) {
@@ -109,6 +178,7 @@ const createCourse = async (req, res) => {
       course
     });
   } catch (err) {
+    console.error('Error creating course:', err);
     res.status(400).json({ message: 'Error creating course', error: err.message });
   }
 };
