@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../services/authService';
+import axios from 'axios';
+import { loginUser, registerUser } from '../services/authService';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';

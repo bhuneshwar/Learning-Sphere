@@ -8,6 +8,9 @@ import CreateCoursePage from './pages/CreateCoursePage';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageUsers from './pages/ManageUsers';
 import ManageCourses from './pages/ManageCourses';
+import CourseListPage from './pages/CourseListPage';
+import MyCoursesPage from './pages/MyCoursesPage';
+import MyLearningPage from './pages/MyLearningPage';
 
 const App = () => {
   return (
@@ -36,6 +39,30 @@ const App = () => {
           element={
             <ProtectedRoute role="Instructor">
               <CreateCoursePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <CourseListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-courses"
+          element={
+            <ProtectedRoute>
+              <MyCoursesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-learning"
+          element={
+            <ProtectedRoute>
+              <MyLearningPage />
             </ProtectedRoute>
           }
         />
