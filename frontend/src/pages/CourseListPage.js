@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { loginUser, registerUser } from '../services/authService';
+import api from '../services/apiConfig';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -16,6 +15,7 @@ const CourseListPage = () => {
         search: ''
     });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -26,11 +26,12 @@ const CourseListPage = () => {
                     ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''))
                 });
                 
-                const response = await axios.get(`/courses?${queryParams}`);
+                const response = await api.get(`/courses?${queryParams}`);
                 setCourses(response.data.courses);
                 setTotalPages(response.data.totalPages);
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching courses:', err);
+                setError('Failed to load courses. Please try again later.');
             } finally {
                 setLoading(false);
             }
@@ -54,11 +55,13 @@ const CourseListPage = () => {
 
     const enrollInCourse = async (courseId) => {
         try {
-            await axios.post(`/courses/${courseId}/enroll`);
-            alert('Enrolled successfully');
+            await api.post(`/courses/${courseId}/enroll`);
+            setError('');
+            // You can add a success message state here
+            alert('Enrolled successfully'); // TODO: Replace with toast notification
         } catch (err) {
-            console.error(err);
-            alert('Error enrolling in course');
+            console.error('Enrollment error:', err);
+            setError('Failed to enroll in course. Please try again.');
         }
     };
 
@@ -70,6 +73,7 @@ const CourseListPage = () => {
                 <div className="course-list-header">
                     <h1>Explore Our Courses</h1>
                     <p>Discover a wide range of courses to enhance your skills and knowledge</p>
+                    {error && <div className="error-message">{error}</div>}
                 </div>
                 
                 <div className="course-filters">
@@ -143,9 +147,9 @@ const CourseListPage = () => {
                                     
                                     <div className="course-instructor">
                                         <div className="instructor-avatar">
-                                            {course.instructor.username.charAt(0).toUpperCase()}
+                                            {course.instructor?.username?.charAt(0)?.toUpperCase() || 'I'}
                                         </div>
-                                        <span>{course.instructor.username}</span>
+                                        <span>{course.instructor?.username || 'Unknown Instructor'}</span>
                                     </div>
                                     
                                     <p className="course-description">
@@ -156,7 +160,7 @@ const CourseListPage = () => {
                                     
                                     <div className="course-meta">
                                         <div className={`course-price ${parseInt(course.price) === 0 ? 'free' : ''}`}>
-                                            {parseInt(course.price) === 0 ? 'Free' : `$${course.price}`}
+                                            {parseInt(course.price) === 0 ? 'Free' : `₹${course.price}`}
                                         </div>
                                         <div className="course-duration">
                                             <i className="fas fa-clock"></i> {course.duration} hours

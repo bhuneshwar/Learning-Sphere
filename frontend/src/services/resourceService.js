@@ -1,4 +1,4 @@
-import axios from './authService';
+import api from './apiConfig';
 
 // Search resources across courses
 export const searchResources = async (searchParams) => {
@@ -11,7 +11,7 @@ export const searchResources = async (searchParams) => {
     if (tags) url += `tags=${encodeURIComponent(tags)}&`;
     if (type) url += `type=${encodeURIComponent(type)}`;
     
-    const response = await axios.get(url);
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Error searching resources' };
@@ -21,7 +21,7 @@ export const searchResources = async (searchParams) => {
 // Get all resources for a specific course
 export const getCourseResources = async (courseId) => {
   try {
-    const response = await axios.get(`/resources/courses/${courseId}/resources`);
+    const response = await api.get(`/resources/courses/${courseId}/resources`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Error fetching resources' };
@@ -31,7 +31,7 @@ export const getCourseResources = async (courseId) => {
 // Add a resource to a course
 export const addCourseResource = async (courseId, resourceData) => {
   try {
-    const response = await axios.post(`/resources/courses/${courseId}/resources`, resourceData);
+    const response = await api.post(`/resources/courses/${courseId}/resources`, resourceData);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Error adding resource' };
@@ -41,7 +41,7 @@ export const addCourseResource = async (courseId, resourceData) => {
 // Update a course-level resource
 export const updateCourseResource = async (courseId, resourceId, resourceData) => {
   try {
-    const response = await axios.put(
+    const response = await api.put(
       `/resources/courses/${courseId}/resources/${resourceId}`,
       resourceData
     );
@@ -54,7 +54,7 @@ export const updateCourseResource = async (courseId, resourceId, resourceData) =
 // Delete a course-level resource
 export const deleteCourseResource = async (courseId, resourceId) => {
   try {
-    const response = await axios.delete(
+    const response = await api.delete(
       `/resources/courses/${courseId}/resources/${resourceId}`
     );
     return response.data;
@@ -66,7 +66,7 @@ export const deleteCourseResource = async (courseId, resourceId) => {
 // Add a resource to a specific lesson
 export const addLessonResource = async (courseId, sectionId, lessonId, resourceData) => {
   try {
-    const response = await axios.post(
+    const response = await api.post(
       `/resources/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources`,
       resourceData
     );
@@ -79,7 +79,7 @@ export const addLessonResource = async (courseId, sectionId, lessonId, resourceD
 // Update a lesson-level resource
 export const updateResource = async (courseId, sectionId, lessonId, resourceId, resourceData) => {
   try {
-    const response = await axios.put(
+    const response = await api.put(
       `/resources/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`,
       resourceData
     );
@@ -92,7 +92,7 @@ export const updateResource = async (courseId, sectionId, lessonId, resourceId, 
 // Delete a lesson-level resource
 export const deleteResource = async (courseId, sectionId, lessonId, resourceId) => {
   try {
-    const response = await axios.delete(
+    const response = await api.delete(
       `/resources/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`
     );
     return response.data;

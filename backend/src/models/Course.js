@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const courseModel = require('./courseModel');
+const Course = require('./courseModel');
 
 // Export the Course model directly from courseModel.js
-module.exports = mongoose.model('Course', courseModel.schema);
+module.exports = Course;

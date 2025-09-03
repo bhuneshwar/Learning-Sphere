@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { createFormDataRequest } from '../services/apiConfig';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import FileUpload from '../components/FileUpload';
 import './CreateCoursePage.css';
 
 const CreateCoursePage = () => {
@@ -17,9 +18,10 @@ const CreateCoursePage = () => {
     duration: '',
     prerequisites: '',
     learningObjectives: [''],
-    sections: [{ title: '', description: '', lessons: [{ title: '', content: '', duration: '' }] }],
+    sections: [{ title: '', description: '', lessons: [{ title: '', content: '', duration: '', resources: [] }] }],
     thumbnail: null,
-    thumbnailPreview: null
+    thumbnailPreview: null,
+    courseResources: []
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -74,7 +76,7 @@ const CreateCoursePage = () => {
   const addSection = () => {
     setFormData({
       ...formData,
-      sections: [...formData.sections, { title: '', description: '', lessons: [{ title: '', content: '', duration: '' }] }]
+      sections: [...formData.sections, { title: '', description: '', lessons: [{ title: '', content: '', duration: '', resources: [] }] }]
     });
   };
 
@@ -85,7 +87,7 @@ const CreateCoursePage = () => {
 
   const addLesson = (sectionIndex) => {
     const updatedSections = [...formData.sections];
-    updatedSections[sectionIndex].lessons.push({ title: '', content: '', duration: '' });
+    updatedSections[sectionIndex].lessons.push({ title: '', content: '', duration: '', resources: [] });
     setFormData({ ...formData, sections: updatedSections });
   };
 
@@ -110,7 +112,6 @@ const CreateCoursePage = () => {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
       const formDataToSend = new FormData();
       
       // Append basic course info
@@ -133,17 +134,30 @@ const CreateCoursePage = () => {
         formDataToSend.append('thumbnail', formData.thumbnail);
       }
 
-      await axios.post(
-        'http://localhost:5000/api/protected/create-course',
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          },
-        }
-      );
+      // Append course resource files and their metadata
+      if (formData.courseResources && formData.courseResources.length > 0) {
+        // Prepare resource metadata (without file objects)
+        const resourcesInfo = formData.courseResources.map(resource => ({
+          title: resource.title,
+          description: resource.description,
+          type: resource.type,
+          tags: resource.tags || [],
+          isPublic: resource.isPublic || false
+        }));
+        
+        formDataToSend.append('courseResourcesInfo', JSON.stringify(resourcesInfo));
+        
+        // Append actual files
+        formData.courseResources.forEach((resource) => {
+          if (resource.file) {
+            formDataToSend.append('courseResources', resource.file);
+          }
+        });
+      }
+
+      await createFormDataRequest('/courses', formDataToSend);
       setSuccess('Course created successfully!');
+      // Show success message for 2 seconds, then navigate
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);
@@ -152,6 +166,18 @@ const CreateCoursePage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle course resources
+  const handleCourseResourcesChange = (newResources) => {
+    setFormData({ ...formData, courseResources: newResources });
+  };
+
+  // Handle lesson resources
+  const handleLessonResourcesChange = (sectionIndex, lessonIndex, newResources) => {
+    const updatedSections = [...formData.sections];
+    updatedSections[sectionIndex].lessons[lessonIndex].resources = newResources;
+    setFormData({ ...formData, sections: updatedSections });
   };
 
   // Render different steps based on activeStep
@@ -164,6 +190,8 @@ const CreateCoursePage = () => {
       case 2:
         return renderCourseContent();
       case 3:
+        return renderResourcesStep();
+      case 4:
         return renderReview();
       default:
         return <div>Unknown step</div>;
@@ -233,7 +261,7 @@ const CreateCoursePage = () => {
       </div>
       <div className="form-row">
         <div className="form-group">
-          <label>Price ($)*</label>
+          <label>Price (₹)*</label>
           <input
             type="number"
             name="price"
@@ -438,6 +466,25 @@ const CreateCoursePage = () => {
       
       <div className="form-navigation">
         <button type="button" className="back-btn" onClick={prevStep}>Back</button>
+        <button type="button" className="next-btn" onClick={nextStep}>Next: Resources</button>
+      </div>
+    </div>
+  );
+
+  const renderResourcesStep = () => (
+    <div className="form-step">
+      <h3>Course Resources</h3>
+      <p className="form-instruction">Upload supplementary materials, notes, and resources for your course</p>
+      
+      <FileUpload
+        resources={formData.courseResources}
+        onResourcesChange={handleCourseResourcesChange}
+        title="Course Resources"
+        description="Upload course-level resources like syllabus, reading materials, templates, etc. These will be accessible to all enrolled students."
+      />
+      
+      <div className="form-navigation">
+        <button type="button" className="back-btn" onClick={prevStep}>Back</button>
         <button type="button" className="next-btn" onClick={nextStep}>Next: Review</button>
       </div>
     </div>
@@ -468,7 +515,7 @@ const CreateCoursePage = () => {
         </div>
         <div className="review-item">
           <span className="review-label">Price:</span>
-          <span className="review-value">${formData.price}</span>
+          <span className="review-value">₹{formData.price}</span>
         </div>
         <div className="review-item">
           <span className="review-label">Duration:</span>
@@ -508,6 +555,21 @@ const CreateCoursePage = () => {
           </div>
         ))}
       </div>
+      
+      {formData.courseResources.length > 0 && (
+        <div className="review-section">
+          <h4>Course Resources ({formData.courseResources.length})</h4>
+          <ul className="review-list">
+            {formData.courseResources.map((resource, index) => (
+              <li key={index}>
+                <strong>{resource.title}</strong>
+                <span className="resource-type"> ({resource.type.toUpperCase()})</span>
+                {resource.description && <span> - {resource.description}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       
       {formData.thumbnailPreview && (
         <div className="review-section">
@@ -556,6 +618,10 @@ const CreateCoursePage = () => {
           </div>
           <div className="progress-step">
             <div className={`step-indicator ${activeStep >= 3 ? 'active' : ''}`}>4</div>
+            <div className="step-label">Resources</div>
+          </div>
+          <div className="progress-step">
+            <div className={`step-indicator ${activeStep >= 4 ? 'active' : ''}`}>5</div>
             <div className="step-label">Review</div>
           </div>
         </div>

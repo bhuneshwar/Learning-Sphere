@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
+import api from '../services/apiConfig';
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
@@ -11,10 +11,13 @@ const Courses = () => {
     const fetchCourses = async () => {
       try {
         const response = await api.get('/courses');
-        setCourses(response.data);
+        // Handle both array response and paginated response
+        const courseData = response.data.courses || response.data;
+        setCourses(Array.isArray(courseData) ? courseData : []);
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching courses:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to fetch courses');
         setLoading(false);
       }
     };
@@ -24,7 +27,7 @@ const Courses = () => {
 
   const filteredCourses = filter === 'all' 
     ? courses 
-    : courses.filter(course => course.category === filter);
+    : courses.filter(course => course.category?.toLowerCase() === filter.toLowerCase());
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -42,15 +45,37 @@ const Courses = () => {
         </select>
       </div>
       {filteredCourses.length > 0 ? (
-        <ul>
+        <div className="courses-grid">
           {filteredCourses.map((course) => (
-            <li key={course.id}>
-              <h3>{course.title}</h3>
-              <p>{course.description}</p>
-              <p>Category: {course.category}</p>
-            </li>
+            <div key={course._id || course.id} className="course-card">
+              {course.coverImage && (
+                <img src={course.coverImage} alt={course.title} className="course-image" />
+              )}
+              <div className="course-content">
+                <h3>{course.title}</h3>
+                <p className="course-description">{course.shortDescription || course.description}</p>
+                <div className="course-meta">
+                  <p><strong>Category:</strong> {course.category}</p>
+                  <p><strong>Level:</strong> {course.level}</p>
+                  <p><strong>Price:</strong> ${course.price}</p>
+                  {course.instructor && (
+                    <p><strong>Instructor:</strong> {course.instructor.firstName} {course.instructor.lastName}</p>
+                  )}
+                  {course.ratings && (
+                    <p><strong>Rating:</strong> {course.ratings.average}/5 ({course.ratings.count} reviews)</p>
+                  )}
+                  {course.totalLessons && (
+                    <p><strong>Lessons:</strong> {course.totalLessons}</p>
+                  )}
+                  {course.totalDuration && (
+                    <p><strong>Duration:</strong> {Math.round(course.totalDuration / 60)} hours</p>
+                  )}
+                </div>
+                <button className="enroll-btn">View Details</button>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       ) : (
         <p>No courses found.</p>
       )}

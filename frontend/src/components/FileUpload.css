@@ -1,0 +1,277 @@
+.file-upload-container {
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.file-upload-header h4 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.upload-description {
+  margin: 0 0 1rem 0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+/* Drag and Drop Zone */
+.file-drop-zone {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  margin-bottom: 1.5rem;
+}
+
+.file-drop-zone:hover {
+  border-color: #3498db;
+  background-color: #f0f8ff;
+}
+
+.file-drop-zone.drag-active {
+  border-color: #3498db;
+  background-color: #e8f4f8;
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #bdc3c7;
+}
+
+.upload-text p {
+  margin: 0.25rem 0;
+  color: #2c3e50;
+}
+
+.upload-text strong {
+  color: #3498db;
+}
+
+.upload-hint {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+.size-limit {
+  color: #95a5a6;
+  font-size: 0.8rem;
+}
+
+/* Uploaded Resources */
+.uploaded-resources {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+.uploaded-resources h5 {
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.resources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Resource Item */
+.resource-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.resource-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resource-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resource-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+}
+
+.resource-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.resource-title-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.resource-title-input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.resource-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #7f8c8d;
+}
+
+.file-size, .file-type {
+  font-weight: 500;
+}
+
+/* Resource Options */
+.resource-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resource-description-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.resource-description-input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.resource-description-input::placeholder {
+  color: #bbb;
+}
+
+.resource-settings {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Remove Button */
+.remove-resource-btn {
+  padding: 0.5rem;
+  background: #f8d7da;
+  color: #dc3545;
+  border: 1px solid #f5c2c7;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.remove-resource-btn:hover {
+  background: #f5c2c7;
+  border-color: #f1aeb5;
+}
+
+.remove-resource-btn i {
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-drop-zone {
+    padding: 1.5rem 1rem;
+  }
+  
+  .drop-zone-content {
+    gap: 0.75rem;
+  }
+  
+  .upload-icon {
+    font-size: 2rem;
+  }
+  
+  .resource-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .resource-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .resource-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .remove-resource-btn {
+    align-self: flex-end;
+  }
+}
+
+/* Animation for new resources */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resource-item {
+  animation: slideIn 0.3s ease;
+}

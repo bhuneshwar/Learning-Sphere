@@ -7,6 +7,32 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['Admin', 'Instructor', 'Learner'], default: 'Learner' },
+  capabilities: {
+    canTeach: { type: Boolean, default: false },
+    canLearn: { type: Boolean, default: true },
+    canAdmin: { type: Boolean, default: false }
+  },
+  instructorApplication: {
+    status: { 
+      type: String, 
+      enum: ['none', 'pending', 'approved', 'rejected'], 
+      default: 'none' 
+    },
+    appliedDate: { type: Date },
+    approvedDate: { type: Date },
+    rejectedDate: { type: Date },
+    rejectionReason: { type: String },
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    applicationData: {
+      experience: { type: String },
+      expertise: [{ type: String }],
+      motivation: { type: String },
+      sampleCourseIdea: { type: String },
+      qualifications: { type: String },
+      linkedinProfile: { type: String },
+      portfolioWebsite: { type: String }
+    }
+  },
   profilePicture: { type: String, default: '' },
   bio: { type: String, default: '' },
   dateJoined: { type: Date, default: Date.now },
@@ -35,7 +61,15 @@ const userSchema = new mongoose.Schema({
     enrollmentDate: { type: Date, default: Date.now },
     progress: { type: Number, default: 0 },
     completed: { type: Boolean, default: false },
-    lastAccessed: { type: Date }
+    lastAccessed: { type: Date },
+    lessonProgress: [{
+      sectionIndex: { type: Number, required: true },
+      lessonIndex: { type: Number, required: true },
+      completed: { type: Boolean, default: false },
+      completedAt: { type: Date },
+      timeSpent: { type: Number, default: 0 }, // in minutes
+      lastPosition: { type: Number, default: 0 } // for video playback position
+    }]
   }],
   preferences: {
     notifications: { type: Boolean, default: true },

@@ -42,10 +42,12 @@ const Footer = () => {
       </div>
       
       <div className="footer-bottom">
-        <p>&copy; {currentYear} Learning Sphere. All rights reserved.</p>
-        <div className="footer-legal">
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms of Service</a>
+        <div className="footer-bottom-content">
+          <p>&copy; {currentYear} Learning Sphere. All rights reserved.</p>
+          <div className="footer-legal">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/terms">Terms of Service</a>
+          </div>
         </div>
       </div>
     </footer>

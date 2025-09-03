@@ -5,6 +5,10 @@ const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
 const resourceDownloadRoutes = require('./routes/resourceDownloadRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
+const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const protectedRoutes = require('./routes/protectedRoutes');
 const cors = require('cors');
@@ -17,17 +21,23 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-    origin: 'http://localhost:3000', // Frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // Frontend URLs
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true, // Allow cookies and credentials
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Middleware to parse JSON
-app.use(express.json());
+// Middleware to parse JSON and URL-encoded data
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/resource-downloads', resourceDownloadRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/api/instructor-applications', instructorApplicationRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use(errorHandler);
 

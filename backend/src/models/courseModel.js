@@ -7,6 +7,15 @@ const lessonSchema = new mongoose.Schema({
   content: { type: String, required: true },
   contentType: { type: String, enum: ['video', 'text', 'quiz', 'assignment'], default: 'text' },
   videoUrl: { type: String },
+  videoPublicId: { type: String }, // Cloudinary public ID for video management
+  videoStreamingUrls: {
+    auto: { type: String },
+    hd: { type: String },
+    sd: { type: String },
+    mobile: { type: String }
+  },
+  videoDuration: { type: Number }, // Video duration in seconds from Cloudinary
+  videoThumbnailUrl: { type: String }, // Auto-generated thumbnail from Cloudinary
   duration: { type: Number }, // in minutes
   order: { type: Number, required: true },
   isPublished: { type: Boolean, default: false },
@@ -25,6 +34,9 @@ const lessonSchema = new mongoose.Schema({
     title: { type: String, required: true },
     type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
     url: { type: String, required: true },
+    publicId: { type: String }, // Cloudinary public ID
+    fileSize: { type: Number }, // File size in bytes
+    format: { type: String }, // File format from Cloudinary
     description: { type: String, default: '' },
     tags: [{ type: String }], // Tags for categorizing and filtering resources
     isPublic: { type: Boolean, default: false },
@@ -47,6 +59,7 @@ const courseSchema = new mongoose.Schema({
   shortDescription: { type: String },
   instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   coverImage: { type: String },
+  coverImagePublicId: { type: String }, // Cloudinary public ID for cover image
   price: { type: Number, default: 0 },
   isPublished: { type: Boolean, default: false },
   category: { type: String, required: true },
@@ -62,6 +75,9 @@ const courseSchema = new mongoose.Schema({
     description: { type: String },
     type: { type: String, enum: ['pdf', 'link', 'file', 'video', 'audio'], required: true },
     url: { type: String, required: true },
+    publicId: { type: String }, // Cloudinary public ID
+    fileSize: { type: Number }, // File size in bytes
+    format: { type: String }, // File format from Cloudinary
     tags: [{ type: String }], // Tags for categorizing and filtering resources
     isPublic: { type: Boolean, default: false }, // Whether the resource is available before enrollment
     addedAt: { type: Date, default: Date.now }

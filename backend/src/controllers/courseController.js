@@ -1,5 +1,16 @@
 const Course = require('../models/courseModel');
 
+// Helper function to determine resource type from MIME type
+const getResourceTypeFromMime = (mimetype) => {
+  if (mimetype.startsWith('image/')) return 'file'; // Store as file type in database
+  if (mimetype.startsWith('video/')) return 'video';
+  if (mimetype.startsWith('audio/')) return 'audio';
+  if (mimetype === 'application/pdf') return 'pdf';
+  if (mimetype.includes('document') || mimetype.includes('text')) return 'file';
+  if (mimetype.includes('zip') || mimetype.includes('archive')) return 'file';
+  return 'file'; // default
+};
+
 // Submit quiz answers
 const submitQuiz = async (req, res) => {
   try {
@@ -60,6 +71,8 @@ const submitQuiz = async (req, res) => {
 // Create a course
 const createCourse = async (req, res) => {
   try {
+    const { uploadMultipleFiles } = require('../utils/cloudinaryUtils');
+    
     // Extract data from request body
     // Handle both JSON and FormData formats
     let { 
@@ -73,7 +86,8 @@ const createCourse = async (req, res) => {
       learningOutcomes,
       price,
       coverImage,
-      sections
+      sections,
+      courseResourcesInfo // Metadata about resources from frontend
     } = req.body;
     
     // Log the raw request body for debugging
@@ -90,6 +104,16 @@ const createCourse = async (req, res) => {
       // Handle learningObjectives field which might be named differently in the frontend
       if (req.body.learningObjectives && !learningOutcomes) {
         learningOutcomes = req.body.learningObjectives;
+      }
+      
+      // Parse learningObjectives if it comes as a string
+      if (typeof req.body.learningObjectives === 'string') {
+        try {
+          learningOutcomes = JSON.parse(req.body.learningObjectives);
+        } catch (e) {
+          console.log('Error parsing learningObjectives:', e);
+          learningOutcomes = [];
+        }
       }
     }
     
@@ -154,6 +178,58 @@ const createCourse = async (req, res) => {
       return res.status(400).json({ message: 'Sections must be an array' });
     }
 
+    // Handle file uploads for course resources
+    let courseResources = [];
+    if (req.files && req.files.length > 0) {
+      console.log(`Processing ${req.files.length} uploaded files`);
+      
+      try {
+        const uploadResults = await uploadMultipleFiles(req.files, 'course-resources');
+        
+        // Parse courseResourcesInfo if provided
+        let resourcesInfo = [];
+        if (courseResourcesInfo) {
+          try {
+            resourcesInfo = typeof courseResourcesInfo === 'string' 
+              ? JSON.parse(courseResourcesInfo) 
+              : courseResourcesInfo;
+          } catch (e) {
+            console.log('Error parsing courseResourcesInfo:', e);
+          }
+        }
+        
+        // Combine upload results with resource info
+        courseResources = uploadResults
+          .filter(result => result.success)
+          .map((result, index) => {
+            const resourceInfo = resourcesInfo[index] || {};
+            
+            return {
+              title: resourceInfo.title || result.originalName.split('.')[0],
+              description: resourceInfo.description || '',
+              type: getResourceTypeFromMime(req.files[index].mimetype),
+              url: result.url,
+              publicId: result.publicId,
+              fileSize: result.fileSize,
+              format: result.format,
+              tags: resourceInfo.tags || [],
+              isPublic: resourceInfo.isPublic || false,
+              addedAt: new Date()
+            };
+          });
+        
+        // Log any failed uploads
+        const failedUploads = uploadResults.filter(result => !result.success);
+        if (failedUploads.length > 0) {
+          console.warn('Some files failed to upload:', failedUploads);
+        }
+        
+      } catch (uploadError) {
+        console.error('Error uploading course resources:', uploadError);
+        // Continue with course creation even if file uploads fail
+      }
+    }
+
     // Use the instructor's ID from the authenticated request
     const instructor = req.user.id;
 
@@ -170,7 +246,8 @@ const createCourse = async (req, res) => {
       price: price || 0,
       coverImage,
       isPublished: false, // Default to unpublished
-      sections: sections || []
+      sections: sections || [],
+      courseResources: courseResources
     });
 
     res.status(201).json({
@@ -661,6 +738,110 @@ const addResourcesToLesson = async (req, res) => {
   }
 };
 
+// Get user progress for a course
+const getCourseProgress = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.user.id;
+
+    const User = require('../models/userModel');
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Find the enrolled course
+    const enrolledCourse = user.enrolledCourses.find(
+      course => course.course.toString() === courseId
+    );
+    
+    if (!enrolledCourse) {
+      return res.status(404).json({ message: 'Not enrolled in this course' });
+    }
+    
+    res.status(200).json({
+      progress: enrolledCourse.lessonProgress || [],
+      overallProgress: enrolledCourse.progress || 0,
+      completed: enrolledCourse.completed || false
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error fetching progress', error: err.message });
+  }
+};
+
+// Mark a specific lesson as complete
+const markLessonComplete = async (req, res) => {
+  try {
+    const { courseId, sectionIndex, lessonIndex } = req.params;
+    const userId = req.user.id;
+    
+    const User = require('../models/userModel');
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Find the enrolled course
+    const enrolledCourse = user.enrolledCourses.find(
+      course => course.course.toString() === courseId
+    );
+    
+    if (!enrolledCourse) {
+      return res.status(404).json({ message: 'Not enrolled in this course' });
+    }
+    
+    // Initialize lesson progress if it doesn't exist
+    if (!enrolledCourse.lessonProgress) {
+      enrolledCourse.lessonProgress = [];
+    }
+    
+    // Check if lesson progress already exists
+    const existingProgress = enrolledCourse.lessonProgress.find(p => 
+      p.sectionIndex === parseInt(sectionIndex) && p.lessonIndex === parseInt(lessonIndex)
+    );
+    
+    if (existingProgress) {
+      existingProgress.completed = true;
+      existingProgress.completedAt = new Date();
+    } else {
+      enrolledCourse.lessonProgress.push({
+        sectionIndex: parseInt(sectionIndex),
+        lessonIndex: parseInt(lessonIndex),
+        completed: true,
+        completedAt: new Date()
+      });
+    }
+    
+    // Update last accessed
+    enrolledCourse.lastAccessed = new Date();
+    
+    // Calculate overall progress
+    const course = await Course.findById(courseId);
+    if (course) {
+      const totalLessons = course.sections.reduce((total, section) => total + section.lessons.length, 0);
+      const completedLessons = enrolledCourse.lessonProgress.filter(p => p.completed).length;
+      enrolledCourse.progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      
+      // Mark course as completed if all lessons are done
+      if (completedLessons >= totalLessons) {
+        enrolledCourse.completed = true;
+      }
+    }
+    
+    await user.save();
+    
+    res.status(200).json({
+      message: 'Lesson marked as complete',
+      progress: enrolledCourse.progress,
+      completed: enrolledCourse.completed
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error marking lesson complete', error: err.message });
+  }
+};
+
 module.exports = {
   submitQuiz, 
   createCourse, 
@@ -673,5 +854,7 @@ module.exports = {
   addLesson,
   updateLesson,
   trackProgress,
-  addResourcesToLesson
+  addResourcesToLesson,
+  getCourseProgress,
+  markLessonComplete
 };

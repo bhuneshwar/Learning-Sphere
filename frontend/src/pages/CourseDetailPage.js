@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from '../services/authService';
+import api from '../services/apiConfig';
 import { useSelector } from 'react-redux';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ResourceRecommendation from '../components/ResourceRecommendation';
+import AIAssistant from '../components/ai/AIAssistant';
 import './CourseDetailPage.css';
 
 const CourseDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector(state => state.auth);
+  const { token, user } = useSelector(state => state.auth);
+  const isAuthenticated = !!token;
   
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,13 +26,13 @@ const CourseDetailPage = () => {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/courses/${id}`);
+        const response = await api.get(`/courses/${id}`);
         setCourse(response.data);
         
         // Check if user is enrolled
         if (isAuthenticated) {
           try {
-            const enrollmentResponse = await axios.get(`/enrollments/check/${id}`);
+            const enrollmentResponse = await api.get(`/enrollments/check/${id}`);
             setEnrollmentStatus(enrollmentResponse.data.status);
           } catch (err) {
             // Not enrolled or error checking
@@ -56,7 +58,7 @@ const CourseDetailPage = () => {
 
     try {
       setEnrolling(true);
-      await axios.post(`/courses/${id}/enroll`);
+      await api.post(`/courses/${id}/enroll`);
       setEnrollmentStatus('enrolled');
     } catch (err) {
       setError('Failed to enroll in the course');
@@ -77,9 +79,14 @@ const CourseDetailPage = () => {
 
     if (enrollmentStatus === 'enrolled') {
       return (
-        <button className="enrolled-button" disabled>
-          Already Enrolled
-        </button>
+        <div className="enrolled-actions">
+          <Link to={`/learn/${course._id}/0/0`} className="start-learning-button">
+            Start Learning
+          </Link>
+          <div className="enrollment-status">
+            <i className="fas fa-check-circle"></i> Enrolled
+          </div>
+        </div>
       );
     }
 
@@ -97,7 +104,7 @@ const CourseDetailPage = () => {
         onClick={handleEnroll} 
         disabled={enrolling}
       >
-        {enrolling ? 'Enrolling...' : `Enroll Now ${course.price > 0 ? `- $${course.price}` : '- Free'}`}
+        {enrolling ? 'Enrolling...' : `Enroll Now ${course.price > 0 ? `- ₹${course.price}` : '- Free'}`}
       </button>
     );
   };
@@ -174,7 +181,7 @@ const CourseDetailPage = () => {
             {parseInt(course.price) === 0 ? (
               <div className="course-price free">Free</div>
             ) : (
-              <div className="course-price">${course.price}</div>
+              <div className="course-price">₹{course.price}</div>
             )}
           </div>
           
@@ -286,7 +293,7 @@ const CourseDetailPage = () => {
                               {lesson.duration && <span>{lesson.duration} min</span>}
                             </div>
                             {enrollmentStatus === 'enrolled' ? (
-                              <Link to={`/learn/${course._id}/lesson/${sectionIndex}/${lessonIndex}`} className="lesson-preview">
+                              <Link to={`/learn/${course._id}/${sectionIndex}/${lessonIndex}`} className="lesson-preview">
                                 <i className="fas fa-eye"></i>
                               </Link>
                             ) : (
@@ -349,6 +356,14 @@ const CourseDetailPage = () => {
       </div>
       
       <Footer />
+      
+      {/* AI Assistant - only show for authenticated users */}
+      {isAuthenticated && (
+        <AIAssistant 
+          courseId={id} 
+          isOpen={false}
+        />
+      )}
     </div>
   );
 };

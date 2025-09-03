@@ -1,5 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import './styles/design-system.css';
+import { ToastProvider } from './components/Toast/ToastContainer';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -12,19 +15,39 @@ import ManageCourses from './pages/ManageCourses';
 import CourseListPage from './pages/CourseListPage';
 import MyCoursesPage from './pages/MyCoursesPage';
 import MyLearningPage from './pages/MyLearningPage';
+import UserProfilePage from './pages/UserProfilePage';
+import SettingsPage from './pages/SettingsPage';
+import CourseAnalytics from './pages/CourseAnalytics';
+import CoursePlayer from './pages/CoursePlayer';
+import CourseDetailPage from './pages/CourseDetailPage';
 
 const App = () => {
   return (
-    <Router>
+    <ErrorBoundary>
+      <ToastProvider>
+        <Router>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<ManageUsers />} />
-        <Route path="/admin/courses" element={<ManageCourses />} />
+        {/* Admin Routes - Protected */}
+        <Route path="/admin" element={
+          <ProtectedRoute role="Admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/users" element={
+          <ProtectedRoute role="Admin">
+            <ManageUsers />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/courses" element={
+          <ProtectedRoute role="Admin">
+            <ManageCourses />
+          </ProtectedRoute>
+        } />
 
         {/* Protected Routes */}
         <Route
@@ -52,6 +75,14 @@ const App = () => {
           }
         />
         <Route
+          path="/courses/:courseId"
+          element={
+            <ProtectedRoute>
+              <CourseDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/my-courses"
           element={
             <ProtectedRoute>
@@ -67,8 +98,42 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/courses/:courseId/analytics"
+          element={
+            <ProtectedRoute role="Instructor">
+              <CourseAnalytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learn/:courseId/:sectionIndex/:lessonIndex"
+          element={
+            <ProtectedRoute>
+              <CoursePlayer />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-    </Router>
+        </Router>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 };
 
