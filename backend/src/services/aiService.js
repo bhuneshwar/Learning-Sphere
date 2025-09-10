@@ -1,12 +1,13 @@
-const { openai, AI_CONFIG } = require('../config/ai');
+const axios = require('axios');
+const { OPENROUTER_CONFIG, AI_CONFIG } = require('../config/ai');
 const { AIChatSession, AIAnalytics } = require('../models/aiChatModel');
 const Course = require('../models/courseModel');
 
 class AIService {
   constructor() {
-    this.isEnabled = !!process.env.OPENAI_API_KEY;
+    this.isEnabled = !!process.env.OPENROUTER_API_KEY;
     if (!this.isEnabled) {
-      console.warn('AI Service disabled: OpenAI API key not found');
+      console.warn('AI Service disabled: OpenRouter API key not found');
     }
   }
 
@@ -155,35 +156,47 @@ class AIService {
   }
 
   /**
-   * Get response from OpenAI
+   * Get response from OpenRouter
    */
   async getAIResponse(messages) {
     try {
-      const completion = await openai.chat.completions.create({
-        model: AI_CONFIG.model,
-        messages: messages,
-        max_tokens: AI_CONFIG.maxTokens,
-        temperature: AI_CONFIG.temperature,
-        stream: false
-      });
+      const response = await axios.post(
+        `${OPENROUTER_CONFIG.baseURL}/chat/completions`,
+        {
+          model: AI_CONFIG.model,
+          messages: messages,
+          max_tokens: AI_CONFIG.maxTokens,
+          temperature: AI_CONFIG.temperature,
+          stream: false
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'http://localhost:5000',
+            'X-Title': 'Learning Sphere AI Assistant'
+          }
+        }
+      );
 
-      const response = completion.choices[0]?.message?.content;
+      const aiResponse = response.data.choices[0]?.message?.content;
       
-      if (!response) {
+      if (!aiResponse) {
         throw new Error('No response received from AI service');
       }
 
-      return response.trim();
+      return aiResponse.trim();
 
     } catch (error) {
-      console.error('OpenAI API Error:', error);
+      console.error('OpenRouter API Error:', error.response?.data || error.message);
       
       // Handle different types of errors
-      if (error.status === 429) {
+      const status = error.response?.status;
+      if (status === 429) {
         throw new Error('AI service is currently busy. Please try again in a moment.');
-      } else if (error.status === 401) {
+      } else if (status === 401) {
         throw new Error('AI service configuration error');
-      } else if (error.status >= 500) {
+      } else if (status >= 500) {
         throw new Error('AI service is temporarily unavailable');
       } else {
         throw new Error('Failed to get AI response');

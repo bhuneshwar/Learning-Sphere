@@ -4,24 +4,25 @@
 This guide will help you set up and test the AI Learning Assistant feature in your Learning Sphere application. The AI assistant provides contextual help to students, course-specific Q&A, and personalized learning guidance.
 
 ## Prerequisites
-- OpenAI API account and API key
+- OpenRouter account and API key
 - Learning Sphere application with course creation and file upload features already working
 
 ## Setup Steps
 
-### 1. Get OpenAI API Key
-1. Visit [OpenAI Platform](https://platform.openai.com/)
+### 1. Get OpenRouter API Key
+1. Visit [OpenRouter](https://openrouter.ai/)
 2. Create an account or sign in
-3. Navigate to API section
+3. Navigate to API Keys section
 4. Create a new API key
 5. Copy the key (starts with `sk-`)
+6. Add credits to your account for API usage
 
 ### 2. Configure Environment Variables
-Add your OpenAI API key to the backend environment file:
+Add your OpenRouter API key to the backend environment file:
 
 ```bash
 # In backend/.env file
-OPENAI_API_KEY=your_openai_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
 **Important**: Never commit your API key to version control!
@@ -30,9 +31,9 @@ OPENAI_API_KEY=your_openai_api_key_here
 The AI feature has been automatically installed with these components:
 
 #### Backend Components:
-- ✅ OpenAI SDK installed
-- ✅ AI configuration (`src/config/ai.js`)
-- ✅ AI service layer (`src/services/aiService.js`)
+- ✅ Axios HTTP client for OpenRouter API
+- ✅ AI configuration (`src/config/ai.js`) - Updated for OpenRouter with DeepSeek V3
+- ✅ AI service layer (`src/services/aiService.js`) - Updated for OpenRouter API
 - ✅ AI database models (`src/models/aiChatModel.js`)
 - ✅ AI controller (`src/controllers/aiController.js`)
 - ✅ AI routes (`src/routes/aiRoutes.js`)
@@ -114,21 +115,24 @@ npm start
 
 ### Issue: AI Assistant Shows "Currently Unavailable"
 **Solution**: 
-1. Check if `OPENAI_API_KEY` is set in backend `.env`
+1. Check if `OPENROUTER_API_KEY` is set in backend `.env`
 2. Restart backend server after adding the key
-3. Check backend logs for OpenAI connection errors
+3. Check backend logs for OpenRouter connection errors
+4. Verify you have credits in your OpenRouter account
 
 ### Issue: "Failed to create chat session"
 **Possible Causes**:
-1. Invalid OpenAI API key
-2. OpenAI API quota exceeded
+1. Invalid OpenRouter API key
+2. OpenRouter account credits exhausted
 3. Network connectivity issues
 4. Database connection issues
+5. DeepSeek model temporarily unavailable
 
 **Solution**:
 1. Verify API key is correct
-2. Check OpenAI account billing/usage
+2. Check OpenRouter account credits/usage
 3. Check backend logs for detailed error messages
+4. Try switching to a different model if DeepSeek is unavailable
 
 ### Issue: Messages not sending
 **Check**:
@@ -149,10 +153,11 @@ npm start
 - **These limits prevent abuse and control costs**
 
 ## Cost Management
-- **Model**: GPT-3.5-turbo (cost-effective)
-- **Estimated cost**: ~$0.01-0.02 per conversation
-- **100 students, 50 questions each**: ~$30-50/month
+- **Model**: DeepSeek V3 (highly cost-effective)
+- **Estimated cost**: ~$0.001-0.005 per conversation (significantly cheaper than GPT models)
+- **100 students, 50 questions each**: ~$5-15/month
 - **Rate limits help control costs**
+- **OpenRouter Credits**: Add credits to your OpenRouter account as needed
 
 ## Security Features
 - ✅ Authentication required for all AI endpoints
@@ -226,11 +231,12 @@ The AI Learning Assistant is now ready to help your students learn more effectiv
 
 ## Cost Optimization Tips
 
-1. **Monitor Usage**: Regularly check OpenAI usage dashboard
-2. **Set Budgets**: Configure spending limits in OpenAI account  
+1. **Monitor Usage**: Regularly check OpenRouter usage dashboard
+2. **Set Budgets**: Monitor credit usage in OpenRouter account  
 3. **Optimize Prompts**: Shorter, focused prompts reduce costs
 4. **Cache Responses**: Consider caching common questions (future enhancement)
 5. **User Limits**: Adjust rate limits based on your budget
+6. **Model Selection**: DeepSeek V3 offers excellent performance at very low cost
 
 ## Testing Checklist
 

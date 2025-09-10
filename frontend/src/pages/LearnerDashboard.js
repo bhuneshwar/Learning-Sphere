@@ -71,8 +71,60 @@ const LearnerDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const data = await dashboardService.getLearnerDashboard();
-      setDashboardData(data);
+      const response = await dashboardService.getLearnerDashboard();
+      // Handle the nested response structure from our API
+      const data = response.data || response;
+      
+      // Transform API response to match frontend expectations
+      const transformedData = {
+        stats: {
+          totalCoursesEnrolled: data.stats?.totalEnrolledCourses || 0,
+          totalCoursesCompleted: data.stats?.completedCourses || 0,
+          totalHoursLearned: data.stats?.totalHoursStudied || 0,
+          currentStreak: data.stats?.currentStreak || 0,
+          totalPoints: data.stats?.totalPoints || 0,
+          averageScore: 85, // Mock for now
+          certificatesEarned: data.stats?.certificatesEarned || 0
+        },
+        enrolledCourses: (data.enrolledCourses || []).map(enrollmentData => {
+          // Handle the case where course data might be nested in course property
+          const course = enrollmentData.course || enrollmentData;
+          return {
+            id: course._id || course.id, // Use _id from MongoDB or fallback to id
+            _id: course._id || course.id, // Keep both for compatibility
+            title: course.title,
+            description: course.description,
+            instructor: course.instructor?.firstName + ' ' + course.instructor?.lastName || course.instructor || 'Unknown',
+            instructorAvatar: course.instructor?.profilePicture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+            progress: enrollmentData.progress || 0,
+            totalLessons: course.totalLessons || 10, // Default if not provided
+            completedLessons: Math.round((enrollmentData.progress || 0) * (course.totalLessons || 10) / 100),
+            image: course.coverImage || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300',
+            lastAccessed: enrollmentData.lastAccessed ? new Date(enrollmentData.lastAccessed).toLocaleString() : '1 day ago',
+            duration: course.duration || course.totalDuration || '30 hours',
+            category: course.category || 'General',
+            difficulty: course.level || 'Intermediate'
+          };
+        }),
+        recentCourses: (data.recentCourses || []).map(enrollmentData => {
+          const course = enrollmentData.course || enrollmentData;
+          return {
+            id: course._id || course.id,
+            _id: course._id || course.id,
+            title: course.title,
+            instructor: course.instructor?.firstName + ' ' + course.instructor?.lastName || 'Unknown',
+            lastAccessed: enrollmentData.lastAccessed ? new Date(enrollmentData.lastAccessed).toLocaleString() : 'Recently'
+          };
+        }),
+        user: data.user || {},
+        // Add mock data for sections not yet implemented in API
+        recommendedCourses: getMockData().recommendedCourses,
+        achievements: getMockData().achievements,
+        upcomingDeadlines: getMockData().upcomingDeadlines,
+        recentActivities: getMockData().recentActivities
+      };
+      
+      setDashboardData(transformedData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       showError('Failed to load dashboard data');
@@ -269,6 +321,17 @@ const LearnerDashboard = () => {
 
   const data = dashboardData || getMockData();
   const { enrolledCourses, recommendedCourses, achievements, upcomingDeadlines, stats, recentActivities } = data;
+  
+  // Ensure stats exists with default values
+  const safeStats = stats || {
+    totalCoursesEnrolled: 0,
+    totalCoursesCompleted: 0,
+    totalHoursLearned: 0,
+    currentStreak: 0,
+    totalPoints: 0,
+    averageScore: 0,
+    certificatesEarned: 0
+  };
 
   const renderTabContent = () => {
     switch(activeTab) {
@@ -286,7 +349,7 @@ const LearnerDashboard = () => {
               <div className="streak-badge">
                 <div className="streak-icon">🔥</div>
                 <div className="streak-info">
-                  <span className="streak-number">{stats.currentStreak}</span>
+                  <span className="streak-number">{safeStats.currentStreak}</span>
                   <span className="streak-label">Day Streak</span>
                 </div>
               </div>
@@ -301,7 +364,7 @@ const LearnerDashboard = () => {
                   </svg>
                 </div>
                 <div className="stat-content">
-                  <div className="stat-value">{stats.totalCoursesEnrolled}</div>
+                  <div className="stat-value">{safeStats.totalCoursesEnrolled}</div>
                   <div className="stat-label">Active Courses</div>
                 </div>
               </div>
@@ -312,7 +375,7 @@ const LearnerDashboard = () => {
                   </svg>
                 </div>
                 <div className="stat-content">
-                  <div className="stat-value">{stats.totalCoursesCompleted}</div>
+                  <div className="stat-value">{safeStats.totalCoursesCompleted}</div>
                   <div className="stat-label">Completed</div>
                 </div>
               </div>
@@ -323,7 +386,7 @@ const LearnerDashboard = () => {
                   </svg>
                 </div>
                 <div className="stat-content">
-                  <div className="stat-value">{stats.totalHoursLearned}h</div>
+                  <div className="stat-value">{safeStats.totalHoursLearned}h</div>
                   <div className="stat-label">Hours Learned</div>
                 </div>
               </div>
@@ -334,7 +397,7 @@ const LearnerDashboard = () => {
                   </svg>
                 </div>
                 <div className="stat-content">
-                  <div className="stat-value">{stats.totalPoints}</div>
+                  <div className="stat-value">{safeStats.totalPoints}</div>
                   <div className="stat-label">Points Earned</div>
                 </div>
               </div>

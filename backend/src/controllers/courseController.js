@@ -153,6 +153,36 @@ const createCourse = async (req, res) => {
         sections = []; 
       }
     }
+    
+    // Add default values for sections and lessons to satisfy schema requirements
+    if (sections && Array.isArray(sections)) {
+      sections = sections.map((section, sectionIndex) => {
+        // Ensure section has required fields
+        const processedSection = {
+          title: section.title || `Section ${sectionIndex + 1}`,
+          description: section.description || '',
+          order: section.order !== undefined ? section.order : sectionIndex,
+          lessons: []
+        };
+        
+        // Process lessons if they exist
+        if (section.lessons && Array.isArray(section.lessons)) {
+          processedSection.lessons = section.lessons.map((lesson, lessonIndex) => ({
+            title: lesson.title || `Lesson ${lessonIndex + 1}`,
+            description: lesson.description || 'No description provided',
+            content: lesson.content || 'Content will be added soon',
+            contentType: lesson.contentType || 'text',
+            duration: lesson.duration || 0,
+            order: lesson.order !== undefined ? lesson.order : lessonIndex,
+            isPublished: lesson.isPublished || false,
+            videoUrl: lesson.videoUrl || '',
+            resources: lesson.resources || []
+          }));
+        }
+        
+        return processedSection;
+      });
+    }
 
     // Handle price conversion
     if (typeof price === 'string') {
@@ -180,11 +210,27 @@ const createCourse = async (req, res) => {
 
     // Handle file uploads for course resources
     let courseResources = [];
-    if (req.files && req.files.length > 0) {
-      console.log(`Processing ${req.files.length} uploaded files`);
+    let thumbnailUrl = null;
+    
+    // Handle thumbnail upload
+    if (req.files && req.files.thumbnail && req.files.thumbnail.length > 0) {
+      try {
+        const thumbnailFile = req.files.thumbnail[0];
+        const uploadResult = await uploadMultipleFiles([thumbnailFile], 'course-thumbnails');
+        if (uploadResult[0] && uploadResult[0].success) {
+          thumbnailUrl = uploadResult[0].url;
+        }
+      } catch (error) {
+        console.error('Error uploading thumbnail:', error);
+      }
+    }
+    
+    // Handle course resources upload
+    if (req.files && req.files.courseResources && req.files.courseResources.length > 0) {
+      console.log(`Processing ${req.files.courseResources.length} uploaded files`);
       
       try {
-        const uploadResults = await uploadMultipleFiles(req.files, 'course-resources');
+        const uploadResults = await uploadMultipleFiles(req.files.courseResources, 'course-resources');
         
         // Parse courseResourcesInfo if provided
         let resourcesInfo = [];
@@ -207,7 +253,7 @@ const createCourse = async (req, res) => {
             return {
               title: resourceInfo.title || result.originalName.split('.')[0],
               description: resourceInfo.description || '',
-              type: getResourceTypeFromMime(req.files[index].mimetype),
+              type: getResourceTypeFromMime(req.files.courseResources[index].mimetype),
               url: result.url,
               publicId: result.publicId,
               fileSize: result.fileSize,
@@ -244,7 +290,7 @@ const createCourse = async (req, res) => {
       prerequisites: prerequisites || [],
       learningOutcomes: learningOutcomes || [],
       price: price || 0,
-      coverImage,
+      coverImage: thumbnailUrl || coverImage,
       isPublished: false, // Default to unpublished
       sections: sections || [],
       courseResources: courseResources
@@ -407,7 +453,14 @@ const deleteCourse = async (req, res) => {
 // Get a single course by ID
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id)
+    const courseId = req.params.id;
+    
+    // Validate ObjectId format
+    if (!courseId || courseId === 'undefined' || !courseId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid course ID format' });
+    }
+    
+    const course = await Course.findById(courseId)
       .populate('instructor', 'firstName lastName profilePicture bio')
       .populate('reviews.user', 'firstName lastName profilePicture');
     

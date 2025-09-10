@@ -1,14 +1,16 @@
-const { OpenAI } = require('openai');
+const axios = require('axios');
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// OpenRouter configuration
+const OPENROUTER_CONFIG = {
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPENROUTER_API_KEY,
+  model: 'deepseek/deepseek-chat'
+};
 
 // AI Configuration
 const AI_CONFIG = {
-  model: 'gpt-3.5-turbo',
-  maxTokens: 1000,
+  model: 'deepseek/deepseek-chat', // DeepSeek V3 model
+  maxTokens: 2000,
   temperature: 0.7,
   maxChatHistory: 10, // Keep last 10 messages for context
   
@@ -57,8 +59,8 @@ Guidelines:
 
 // Validate AI configuration
 const validateAIConfig = () => {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn('⚠️  OPENAI_API_KEY not found in environment variables. AI features will be disabled.');
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.warn('⚠️  OPENROUTER_API_KEY not found in environment variables. AI features will be disabled.');
     return false;
   }
   
@@ -66,25 +68,36 @@ const validateAIConfig = () => {
   return true;
 };
 
-// Test OpenAI connection
+// Test OpenRouter connection
 const testAIConnection = async () => {
   try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: 'Hello' }],
-      max_tokens: 10
-    });
+    const response = await axios.post(
+      `${OPENROUTER_CONFIG.baseURL}/chat/completions`,
+      {
+        model: OPENROUTER_CONFIG.model,
+        messages: [{ role: 'user', content: 'Hello' }],
+        max_tokens: 10
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'http://localhost:5000', // Optional: for tracking
+          'X-Title': 'Learning Sphere AI Assistant' // Optional: for tracking
+        }
+      }
+    );
     
-    console.log('✅ OpenAI connection test successful');
+    console.log('✅ OpenRouter connection test successful');
     return true;
   } catch (error) {
-    console.error('❌ OpenAI connection test failed:', error.message);
+    console.error('❌ OpenRouter connection test failed:', error.message);
     return false;
   }
 };
 
 module.exports = {
-  openai,
+  OPENROUTER_CONFIG,
   AI_CONFIG,
   validateAIConfig,
   testAIConnection

@@ -42,7 +42,10 @@ const handleFileUploadError = (err, req, res, next) => {
 // Course management routes
 router.post('/', 
   authMiddleware, 
-  courseResourceUpload.array('courseResources', 10), // Accept up to 10 files
+  courseResourceUpload.fields([
+    { name: 'thumbnail', maxCount: 1 },
+    { name: 'courseResources', maxCount: 10 }
+  ]),
   handleFileUploadError,
   createCourse
 ); // Create a course with file uploads

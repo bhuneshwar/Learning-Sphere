@@ -319,7 +319,7 @@ const getAIServiceStatus = async (req, res) => {
         enabled: isEnabled,
         message: isEnabled 
           ? 'AI service is operational' 
-          : 'AI service is disabled - OpenAI API key not configured'
+          : 'AI service is disabled - OpenRouter API key not configured'
       }
     });
   } catch (error) {

@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const protectedRoutes = require('./routes/protectedRoutes');
 const cors = require('cors');
@@ -38,6 +39,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/instructor-applications', instructorApplicationRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api', dashboardRoutes);
 app.use('/api/protected', protectedRoutes);
 app.use(errorHandler);
 
